@@ -1,0 +1,9 @@
+### Next steps for this week 09/10/26
+
+[ ] Select the small subdataset for the next stage of analysis and modeling.
+[ ] Distinguish true positives from false positives in the dataset and verify the labels.
+[ ] Scale the data in the selected dataset.
+[ ] Create client metadata for the selected dataset.
+[ ] Explore whether relevant feature engineering is needed.
+[ ] Begin model selection.
+[ ] Evaluate model outputs, giving greater weight to false negatives.
