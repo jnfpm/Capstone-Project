@@ -1,5 +1,0 @@
-kagglehub
-matplotlib
-numpy
-pandas
-seaborn
