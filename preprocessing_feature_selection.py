@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 
 
 transactions_df = pd.read_csv(
-	Path("data") / "transactions_data.csv",
+	Path("data") / "sample_trans.csv",
 	low_memory=False,
 )
 

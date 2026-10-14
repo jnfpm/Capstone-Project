@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.feature_selection import RFE
 from sklearn.linear_model import LassoCV, LogisticRegression
+from sklearn.preprocessing import RobustScaler
 
 # FEATURE SELECTION METHODS
 
@@ -69,5 +70,38 @@ def lasso_regression_feature_selection(
 		"Selected": model.coef_ != 0,
 	})
 	return model, results
+
+
+def preprocess_data_standardscaler(df):
+   df = df.copy()
+
+   drop_cols = [
+        'Type']
+   df.drop(columns=[col for col in drop_cols if col in df.columns], inplace=True)
+
+  
+
+    # Identify spend columns dynamically from the dataframe
+   spend_cols = [col for col in df.columns if 'lifetime_spend' in col]
+   log1_cols = [col for col in spend_cols] + ['total_lifetime_spend']
+   for col in log1_cols:
+    if col in df.columns:
+        df[col] = np.log1p(df[col])
+
+    # Identify spend  prop columns dynamically from the dataframe
+   prop_cols = [col for col in df.columns if 'prop' in col]
+   log2_cols = [col for col in prop_cols ]
+   for col in log2_cols:
+    if col in df.columns:
+        df[col] = np.log1p(df[col])
+
+
+    # Standard Scaler
+    scaler = StandardScaler()
+    clustering_cols_final = df.select_dtypes(include=np.number).columns.tolist()
+    df[clustering_cols_final] = scaler.fit_transform(df[clustering_cols_final])
+
+    return df
+
 
 
