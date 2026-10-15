@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+from sklearn.compose import ColumnTransformer
 from sklearn.feature_selection import RFE
 from sklearn.linear_model import LassoCV, LogisticRegression
 from sklearn.preprocessing import RobustScaler
@@ -72,36 +74,79 @@ def lasso_regression_feature_selection(
 	return model, results
 
 
-def preprocess_data_standardscaler(df):
-   df = df.copy()
+def _prepare_features(df):
+	features = df.copy()
+	passthrough_cols = [
+		"Account",
+		"Account.1",
+		"From Bank",
+		"Receiver Bank Name",
+		"Receiver Entity ID",
+		"Receiver Entity Name",
+		"Sender Bank Name",
+		"Sender Entity ID",
+		"Sender Entity Name",
+		"To Bank",
+		"Payment Currency",
+		"Receiving Currency",
+		"Payment Format"
+	]
+	passthrough_cols = [
+		column for column in passthrough_cols if column in features.columns
+	]
+	features.drop(
+		columns=["Type", "Sender Account Matched", "Receiver Account Matched"],
+		errors="ignore",
+		inplace=True,
+	)
 
-   drop_cols = [
-        'Type']
-   df.drop(columns=[col for col in drop_cols if col in df.columns], inplace=True)
+	if "Timestamp" in features:
+		timestamp = pd.to_datetime(features.pop("Timestamp"))
+		features["Timestamp Hour"] = timestamp.dt.hour
+		features["Timestamp Day"] = timestamp.dt.day
+		features["Timestamp Weekday"] = timestamp.dt.dayofweek
 
-  
+	amount_cols = [
+		column
+		for column in ("Amount Received", "Amount Paid")
+		if column in features.columns
+	]
+	for column in amount_cols:
+		features[column] = np.log1p(features[column].clip(lower=0))
 
-    # Identify spend columns dynamically from the dataframe
-   spend_cols = [col for col in df.columns if 'lifetime_spend' in col]
-   log1_cols = [col for col in spend_cols] + ['total_lifetime_spend']
-   for col in log1_cols:
-    if col in df.columns:
-        df[col] = np.log1p(df[col])
-
-    # Identify spend  prop columns dynamically from the dataframe
-   prop_cols = [col for col in df.columns if 'prop' in col]
-   log2_cols = [col for col in prop_cols ]
-   for col in log2_cols:
-    if col in df.columns:
-        df[col] = np.log1p(df[col])
+	numeric_cols = [
+		column
+		for column in features.select_dtypes(include="number").columns
+		if column not in passthrough_cols
+	]
+	return features, numeric_cols, passthrough_cols
 
 
-    # Standard Scaler
-    scaler = StandardScaler()
-    clustering_cols_final = df.select_dtypes(include=np.number).columns.tolist()
-    df[clustering_cols_final] = scaler.fit_transform(df[clustering_cols_final])
+def fit_preprocessor(df):
+	features, numeric_cols, passthrough_cols = _prepare_features(df)
+	transformers = [
+		("numeric", RobustScaler(), numeric_cols),
+		("passthrough", "passthrough", passthrough_cols),
+	]
+	preprocessor = ColumnTransformer(
+		transformers=transformers,
+		remainder="drop",
+		verbose_feature_names_out=False,
+	)
+	# Fit on training data once, then reuse the same transformations on validation data.
+	return preprocessor.fit(features)
 
-    return df
+
+def preprocess_data(df, fitted_preprocessor):
+	features, _, _ = _prepare_features(df)
+	transformed = fitted_preprocessor.transform(features)
+	if hasattr(transformed, "toarray"):
+		transformed = transformed.toarray()
+	return pd.DataFrame(
+		transformed,
+		columns=fitted_preprocessor.get_feature_names_out(),
+		index=df.index,
+	)
 
 
 
