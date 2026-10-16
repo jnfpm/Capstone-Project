@@ -80,16 +80,16 @@ def _prepare_features(df):
 		"Account",
 		"Account.1",
 		"From Bank",
-		"Receiver Bank Name",
+		"Receiver Bank Name", #cat
 		"Receiver Entity ID",
-		"Receiver Entity Name",
-		"Sender Bank Name",
+		"Receiver Entity Name", #cat
+		"Sender Bank Name", #cat
 		"Sender Entity ID",
-		"Sender Entity Name",
+		"Sender Entity Name", #cat
 		"To Bank",
-		"Payment Currency",
-		"Receiving Currency",
-		"Payment Format"
+		"Payment Currency",#cat
+		"Receiving Currency",#cat
+		"Payment Format" #cat
 	]
 	passthrough_cols = [
 		column for column in passthrough_cols if column in features.columns
