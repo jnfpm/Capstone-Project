@@ -1,5 +1,10 @@
 import numpy as np
 import pandas as pd
+import kagglehub
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
+
 
 # Column names created by eu.link_accounts - check them with print(trans.columns) and adjust if needed
 SENDER_BANK_NAME = "Sender Bank Name"
@@ -7,6 +12,12 @@ RECEIVER_BANK_NAME = "Receiver Bank Name"
 SENDER_ENTITY_NAME = "Sender Entity Name"
 RECEIVER_ENTITY_NAME = "Receiver Entity Name"
 PASS_THROUGH_MINUTES = 60   # money forwarded within this window after arriving counts as pass-through
+
+dataset = "ealtman2019/ibm-transactions-for-anti-money-laundering-aml"
+
+trans = kagglehub.dataset_download(dataset, path="HI-Small_Trans.csv")
+accounts = kagglehub.dataset_download(dataset, path="HI-Small_accounts.csv")
+patterns = kagglehub.dataset_download(dataset, path="HI-Small_Patterns.txt")
 
 
 def preprocess(trans):
@@ -132,25 +143,39 @@ if __name__ == "__main__":
     sys.path.insert(0, "src")
     import eda_utils as eu
 
-    raw = Path("data/raw")             # folder with original files
-    # load transactions sorted by time
-    trans = eu.load_transactions(raw / "HI-Small_Trans.csv")
-    # load accounts file (bank names, entity names and entity ids)
-    accounts = eu.load_accounts(raw / "HI-Small_accounts.csv")
-    # load pattern file (laundering schemes)
-    patterns, _, _ = eu.load_patterns(raw / "HI-Small_Patterns.txt")
-    # connects accounts and transactions (adds bank names, entity names and entity ids)
+    import kagglehub
+
+    # 1. Descarregar os ficheiros via kagglehub (ou usar as variáveis se já fizeste em cima)
+    dataset = "ealtman2019/ibm-transactions-for-anti-money-laundering-aml"
+    
+    trans_path = kagglehub.dataset_download(dataset, path="HI-Small_Trans.csv")
+    accounts_path = kagglehub.dataset_download(dataset, path="HI-Small_accounts.csv")
+    patterns_path = kagglehub.dataset_download(dataset, path="HI-Small_Patterns.txt")
+
+    # 2. Carregar os dados usando os caminhos do kagglehub
+    trans = eu.load_transactions(trans_path)
+    accounts = eu.load_accounts(accounts_path)
+    patterns, _, _ = eu.load_patterns(patterns_path)
+
+    # 3. Conectar contas e padrões (como tinhas antes)
     trans, _ = eu.link_accounts(trans, accounts)
-    # connects patterns and transactions (adds 'Attempt ID' and 'Pattern Type')
     trans, _, _ = eu.link_patterns(trans, patterns)
 
-    # runs preprocessing
+    # 4. Executar o pré-processamento
     X, y, meta = preprocess(trans)
 
-    out = Path("data/processed")                      # output folder
-    out.mkdir(parents=True, exist_ok=True)            # create folder if it doesn't exist
-    X.to_parquet(out / "X.parquet")                   # store features
-    y.to_frame().to_parquet(out / "y.parquet")        # store target
-    meta.to_parquet(out / "meta.parquet")             # store columns for the split
-    # Show X's size and how many laundering transactions exist
+    # 5. Guardar os resultados processados
+    out = Path("data/processed")                      
+    out.mkdir(parents=True, exist_ok=True)            
+    X.to_parquet(out / "X.parquet")                   
+    y.to_frame().to_parquet(out / "y.parquet")        
+    meta.to_parquet(out / "meta.parquet")             
+    
     print(X.shape, int(y.sum()), "positives")
+
+
+print(preprocess(trans))
+
+print(trans)
+
+
