@@ -35,28 +35,35 @@ def find_project_root(start=None):
     """
     here = Path(__file__).resolve().parent
     for candidate in [here, *here.parents]:
-        if (candidate / "data" / "raw").is_dir():
+        if (candidate / "data" / "raw").is_dir() or (candidate / "data").is_dir():
             return candidate
 
     start = Path(start or Path.cwd()).resolve()
     for candidate in [start, *start.parents]:
-        if (candidate / "data" / "raw").is_dir():
+        if (candidate / "data" / "raw").is_dir() or (candidate / "data").is_dir():
             return candidate
 
     raise FileNotFoundError(
-        "Could not locate a 'data/raw' directory above either "
+        "Could not locate a 'data' directory above either "
         f"{here} or {start}. Pass paths explicitly if the layout differs."
     )
 
 
 try:
     PROJECT_ROOT = find_project_root()
+    if (PROJECT_ROOT / "data" / "raw").is_dir() and (PROJECT_ROOT / "data" / "raw" / "HI-Small_Trans.csv").is_file():
+        DATA_DIR = PROJECT_ROOT / "data" / "raw"
+    elif (PROJECT_ROOT / "data").is_dir() and (PROJECT_ROOT / "data" / "HI-Small_Trans.csv").is_file():
+        DATA_DIR = PROJECT_ROOT / "data"
+    else:
+        raise FileNotFoundError()
 except FileNotFoundError:
-    # Importing should never fail just because the data has not been placed yet.
-    # Loader calls will raise a clear FileNotFoundError on the actual path.
-    PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-DATA_DIR = PROJECT_ROOT / "data" / "raw"
+    PROJECT_ROOT = Path(__file__).resolve().parent
+    try:
+        import kagglehub
+        DATA_DIR = Path(kagglehub.dataset_download("ealtman2019/ibm-transactions-for-anti-money-laundering-aml"))
+    except Exception:
+        DATA_DIR = PROJECT_ROOT / "data"
 
 TRANS_DTYPES = {
     "From Bank": "int64",

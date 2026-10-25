@@ -13,11 +13,21 @@ SENDER_ENTITY_NAME = "Sender Entity Name"
 RECEIVER_ENTITY_NAME = "Receiver Entity Name"
 PASS_THROUGH_MINUTES = 60   # money forwarded within this window after arriving counts as pass-through
 
-dataset = "ealtman2019/ibm-transactions-for-anti-money-laundering-aml"
 
-trans = kagglehub.dataset_download(dataset, path="HI-Small_Trans.csv")
-accounts = kagglehub.dataset_download(dataset, path="HI-Small_accounts.csv")
-patterns = kagglehub.dataset_download(dataset, path="HI-Small_Patterns.txt")
+def get_kaggle_dataset_dir(dataset="ealtman2019/ibm-transactions-for-anti-money-laundering-aml"):
+    """Download dataset directly from Kaggle using kagglehub and return folder Path."""
+    from pathlib import Path
+    return Path(kagglehub.dataset_download(dataset))
+
+
+def load_kaggle_data(dataset="ealtman2019/ibm-transactions-for-anti-money-laundering-aml"):
+    """Download from Kaggle and load CSVs directly into DataFrames."""
+    from pathlib import Path
+    data_dir = get_kaggle_dataset_dir(dataset)
+    trans = pd.read_csv(data_dir / "HI-Small_Trans.csv")
+    accounts = pd.read_csv(data_dir / "HI-Small_accounts.csv")
+    return trans, accounts
+
 
 
 def preprocess(trans):
@@ -25,6 +35,15 @@ def preprocess(trans):
     Return X (features), y (target) and meta (necessary columns for split)."""
 
     # CLEANING
+    # 1. Ensure Timestamp is datetime
+    if not pd.api.types.is_datetime64_any_dtype(trans["Timestamp"]):
+        trans = trans.copy()
+        trans["Timestamp"] = pd.to_datetime(trans["Timestamp"])
+
+    # 2. Ensure chronological order (critical for point-in-time features: cumcount, diff, dwell)
+    if not trans["Timestamp"].is_monotonic_increasing:
+        trans = trans.sort_values("Timestamp")
+
     # Keep only data until 11th of September and index from 0 to N
     # The 9 exact duplicate rows are kept (a repeated row can be a real repeated payment)
     df = trans[trans["Timestamp"] < "2022-09-11"].reset_index(drop=True)
@@ -140,42 +159,45 @@ def preprocess(trans):
 if __name__ == "__main__":
     import sys
     from pathlib import Path
-    sys.path.insert(0, "src")
+
+    # Ensure this folder is in sys.path so eda_utils can be imported
+    current_dir = Path(__file__).resolve().parent
+    if str(current_dir) not in sys.path:
+        sys.path.insert(0, str(current_dir))
+
     import eda_utils as eu
 
-    import kagglehub
+    # 1. Download files directly via kagglehub
+    data_dir = get_kaggle_dataset_dir()
+    print("Path to dataset files:", data_dir)
 
-    # 1. Descarregar os ficheiros via kagglehub (ou usar as variáveis se já fizeste em cima)
-    dataset = "ealtman2019/ibm-transactions-for-anti-money-laundering-aml"
-    
-    trans_path = kagglehub.dataset_download(dataset, path="HI-Small_Trans.csv")
-    accounts_path = kagglehub.dataset_download(dataset, path="HI-Small_accounts.csv")
-    patterns_path = kagglehub.dataset_download(dataset, path="HI-Small_Patterns.txt")
+    trans_path = data_dir / "HI-Small_Trans.csv"
+    accounts_path = data_dir / "HI-Small_accounts.csv"
+    patterns_path = data_dir / "HI-Small_Patterns.txt"
 
-    # 2. Carregar os dados usando os caminhos do kagglehub
+    # 2. Load data
+    print("Loading datasets...")
     trans = eu.load_transactions(trans_path)
     accounts = eu.load_accounts(accounts_path)
     patterns, _, _ = eu.load_patterns(patterns_path)
 
-    # 3. Conectar contas e padrões (como tinhas antes)
+    # 3. Connect accounts and patterns
+    print("Linking accounts and patterns...")
     trans, _ = eu.link_accounts(trans, accounts)
     trans, _, _ = eu.link_patterns(trans, patterns)
 
-    # 4. Executar o pré-processamento
+    # 4. Preprocessing
+    print("Running preprocessing...")
     X, y, meta = preprocess(trans)
 
-    # 5. Guardar os resultados processados
-    out = Path("data/processed")                      
-    out.mkdir(parents=True, exist_ok=True)            
-    X.to_parquet(out / "X.parquet")                   
-    y.to_frame().to_parquet(out / "y.parquet")        
-    meta.to_parquet(out / "meta.parquet")             
-    
-    print(X.shape, int(y.sum()), "positives")
+    # 5. Save processed results
+    out = current_dir / "data" / "processed"
+    out.mkdir(parents=True, exist_ok=True)
+    X.to_parquet(out / "X.parquet")
+    y.to_frame().to_parquet(out / "y.parquet")
+    meta.to_parquet(out / "meta.parquet")
 
+    print(f"Done! X: {X.shape}, y: {int(y.sum())} positives")
 
-print(preprocess(trans))
-
-print(trans)
 
 

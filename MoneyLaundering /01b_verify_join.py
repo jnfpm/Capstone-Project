@@ -20,14 +20,16 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, r"D:\capstone\src")
+ROOT_DIR = Path(__file__).resolve().parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 import numpy as np
 import pandas as pd
 import eda_utils
 
-RAW = Path(r"D:\capstone\data\raw")
-PROC = Path(r"D:\capstone\data\processed")
+RAW = eda_utils.DATA_DIR
+PROC = ROOT_DIR / "data" / "processed"
 CSV = PROC / "hi_small_joined.csv"
 PARQUET = PROC / "hi_small_joined.parquet"
 

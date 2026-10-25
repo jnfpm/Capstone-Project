@@ -15,14 +15,16 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, r"D:\capstone\src")
+ROOT_DIR = Path(__file__).resolve().parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 import duckdb
 import pandas as pd
 import eda_utils
 
-RAW = Path(r"D:\capstone\data\raw")
-OUT_DIR = Path(r"D:\capstone\data\processed")
+RAW = eda_utils.DATA_DIR
+OUT_DIR = ROOT_DIR / "data" / "processed"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 PARQUET = OUT_DIR / "hi_small_joined.parquet"
 CSV = OUT_DIR / "hi_small_joined.csv"
