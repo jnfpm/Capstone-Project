@@ -49,21 +49,29 @@ def find_project_root(start=None):
     )
 
 
-try:
-    PROJECT_ROOT = find_project_root()
-    if (PROJECT_ROOT / "data" / "raw").is_dir() and (PROJECT_ROOT / "data" / "raw" / "HI-Small_Trans.csv").is_file():
-        DATA_DIR = PROJECT_ROOT / "data" / "raw"
-    elif (PROJECT_ROOT / "data").is_dir() and (PROJECT_ROOT / "data" / "HI-Small_Trans.csv").is_file():
-        DATA_DIR = PROJECT_ROOT / "data"
-    else:
-        raise FileNotFoundError()
-except FileNotFoundError:
-    PROJECT_ROOT = Path(__file__).resolve().parent
+def get_data_dir(dataset="ealtman2019/ibm-transactions-for-anti-money-laundering-aml"):
+    """Fetch raw dataset directory from Kaggle via kagglehub, falling back to local files if offline."""
     try:
         import kagglehub
-        DATA_DIR = Path(kagglehub.dataset_download("ealtman2019/ibm-transactions-for-anti-money-laundering-aml"))
+        return Path(kagglehub.dataset_download(dataset))
     except Exception:
-        DATA_DIR = PROJECT_ROOT / "data"
+        try:
+            root = find_project_root()
+            if (root / "data" / "raw").is_dir() and (root / "data" / "raw" / "HI-Small_Trans.csv").is_file():
+                return root / "data" / "raw"
+            if (root / "data").is_dir() and (root / "data" / "HI-Small_Trans.csv").is_file():
+                return root / "data"
+        except FileNotFoundError:
+            pass
+        return Path(__file__).resolve().parent / "data" / "raw"
+
+
+try:
+    PROJECT_ROOT = find_project_root()
+except FileNotFoundError:
+    PROJECT_ROOT = Path(__file__).resolve().parent
+
+DATA_DIR = get_data_dir()
 
 TRANS_DTYPES = {
     "From Bank": "int64",

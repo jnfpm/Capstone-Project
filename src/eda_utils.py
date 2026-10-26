@@ -49,17 +49,29 @@ def find_project_root(start=None):
     )
 
 
+def get_data_dir(dataset="ealtman2019/ibm-transactions-for-anti-money-laundering-aml"):
+    """Fetch raw dataset directory from Kaggle via kagglehub, falling back to local files if offline."""
+    try:
+        import kagglehub
+        return Path(kagglehub.dataset_download(dataset))
+    except Exception:
+        try:
+            root = find_project_root()
+            if (root / "data" / "raw").is_dir() and (root / "data" / "raw" / "HI-Small_Trans.csv").is_file():
+                return root / "data" / "raw"
+            if (root / "data").is_dir() and (root / "data" / "HI-Small_Trans.csv").is_file():
+                return root / "data"
+        except FileNotFoundError:
+            pass
+        return Path(__file__).resolve().parent / "data" / "raw"
+
+
 try:
     PROJECT_ROOT = find_project_root()
 except FileNotFoundError:
     PROJECT_ROOT = Path(__file__).resolve().parent
 
-if (PROJECT_ROOT / "data" / "raw").is_dir():
-    DATA_DIR = PROJECT_ROOT / "data" / "raw"
-elif (PROJECT_ROOT / "data").is_dir():
-    DATA_DIR = PROJECT_ROOT / "data"
-else:
-    DATA_DIR = PROJECT_ROOT / "data"
+DATA_DIR = get_data_dir()
 
 TRANS_DTYPES = {
     "From Bank": "int64",
