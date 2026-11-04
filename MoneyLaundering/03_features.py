@@ -12,6 +12,7 @@ Usage:
     python 03_features.py --sample-dir data/processed/sample/time
                                                 # same features, restricted to the 02 sample rows,
                                                 # with the sample's split and weights -> features_sample/
+    python 03_features.py --threads 1           # reduce peak memory use further
 
 Feature rules are in src/features.py. All counting in DuckDB. ~1-3 min on the full file.
 Needs: pip install duckdb pyarrow pandas
@@ -32,6 +33,7 @@ ap.add_argument("--joined", default=str(ROOT / "data" / "processed" / "hi_small_
 ap.add_argument("--out", default=None, help="output folder (default data/processed/features[_sample])")
 ap.add_argument("--sample-dir", default=None, help="folder with the 02 time-split sample files")
 ap.add_argument("--memory-limit", default="4GB")
+ap.add_argument("--threads", type=int, default=2, help="DuckDB threads (lower values reduce peak memory)")
 args = ap.parse_args()
 
 joined = Path(args.joined)
@@ -41,7 +43,8 @@ out = Path(args.out) if args.out else ROOT / "data" / "processed" / (
     "features_sample" if args.sample_dir else "features")
 
 log = F.Timer()
-con = F.connect(tmp_dir=ROOT / "data" / "processed" / "duckdb_tmp", memory_limit=args.memory_limit)
+con = F.connect(tmp_dir=ROOT / "data" / "processed" / "duckdb_tmp",
+                memory_limit=args.memory_limit, threads=args.threads)
 
 log(f"reading {joined.name} (rows before {F.CUTOFF})...")
 F.build_base(con, joined)
