@@ -4,3 +4,8 @@ numpy
 pandas
 seaborn
 scikit-learn
+duckdb>=1.0
+pyarrow
+lightgbm>=4.0
+joblib
+jupyter
