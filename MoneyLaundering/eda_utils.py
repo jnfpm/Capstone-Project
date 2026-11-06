@@ -35,28 +35,43 @@ def find_project_root(start=None):
     """
     here = Path(__file__).resolve().parent
     for candidate in [here, *here.parents]:
-        if (candidate / "data" / "raw").is_dir():
+        if (candidate / "data" / "raw").is_dir() or (candidate / "data").is_dir():
             return candidate
 
     start = Path(start or Path.cwd()).resolve()
     for candidate in [start, *start.parents]:
-        if (candidate / "data" / "raw").is_dir():
+        if (candidate / "data" / "raw").is_dir() or (candidate / "data").is_dir():
             return candidate
 
     raise FileNotFoundError(
-        "Could not locate a 'data/raw' directory above either "
+        "Could not locate a 'data' directory above either "
         f"{here} or {start}. Pass paths explicitly if the layout differs."
     )
+
+
+def get_data_dir(dataset="ealtman2019/ibm-transactions-for-anti-money-laundering-aml"):
+    """Fetch raw dataset directory from Kaggle via kagglehub, falling back to local files if offline."""
+    try:
+        import kagglehub
+        return Path(kagglehub.dataset_download(dataset))
+    except Exception:
+        try:
+            root = find_project_root()
+            if (root / "data" / "raw").is_dir() and (root / "data" / "raw" / "HI-Small_Trans.csv").is_file():
+                return root / "data" / "raw"
+            if (root / "data").is_dir() and (root / "data" / "HI-Small_Trans.csv").is_file():
+                return root / "data"
+        except FileNotFoundError:
+            pass
+        return Path(__file__).resolve().parent / "data" / "raw"
 
 
 try:
     PROJECT_ROOT = find_project_root()
 except FileNotFoundError:
-    # Importing should never fail just because the data has not been placed yet.
-    # Loader calls will raise a clear FileNotFoundError on the actual path.
-    PROJECT_ROOT = Path(__file__).resolve().parent.parent
+    PROJECT_ROOT = Path(__file__).resolve().parent
 
-DATA_DIR = PROJECT_ROOT / "data" / "raw"
+DATA_DIR = get_data_dir()
 
 TRANS_DTYPES = {
     "From Bank": "int64",
