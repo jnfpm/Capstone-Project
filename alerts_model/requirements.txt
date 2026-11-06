@@ -9,3 +9,4 @@ pyarrow
 lightgbm>=4.0
 joblib
 jupyter
+python-dotenv

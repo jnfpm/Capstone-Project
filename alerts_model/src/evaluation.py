@@ -3,9 +3,15 @@
 Accuracy is meaningless at ~0.1% prevalence. What we report:
 
 * PR-AUC (average precision), always next to the split's prevalence, and ROC-AUC.
-* Alert-budget tables: alert the top X% of transfers (by weighted volume) and
-  measure precision / recall. The threshold is chosen on VAL and carried to TEST
-  unchanged - that is what a deployed system would do.
+* Alert budgets, two ways:
+  - fixed threshold: set on VAL, carried to TEST unchanged. Its alert volume
+    drifts with the score distribution (on the real run the 0.5% budget became
+    0.99% on test).
+  - daily top-k (main): each day, alert the top X% of that day's transfers.
+    Alert volume is fixed by construction - what an alert team can staff.
+* Own-date view: test rows whose own date is in the test period. Earlier rows of
+  schemes that end in test ("moved" rows) are all positives with no negatives
+  from their days, so they inflate precision; they are reported separately.
 * Breakdowns of recall by pattern type, explained vs unexplained positives and
   payment format.
 * Scheme-level catch rate: the agent starts an investigation from an alert, so
@@ -81,12 +87,54 @@ def budget_table(y, s, w, budgets=(0.001, 0.0025, 0.005, 0.01, 0.02, 0.05),
     return pd.DataFrame(rows)
 
 
+def daily_topk(s, day, w, budget: float) -> np.ndarray:
+    """Boolean alerts: within each day, the top ``budget`` share of weighted volume."""
+    s, w = np.asarray(s, float), np.asarray(w, float)
+    day = pd.Series(np.asarray(day))
+    alert = np.zeros(len(s), bool)
+    for _, idx in day.groupby(day).groups.items():
+        idx = np.asarray(idx)
+        order = idx[np.argsort(-s[idx], kind="mergesort")]
+        cw = np.cumsum(w[order]) / w[idx].sum()
+        k = int(np.searchsorted(cw, budget, side="left")) + 1
+        alert[order[:k]] = True
+    return alert
+
+
+def at_alerts(y, w, alert, n_days: float | None = None) -> dict:
+    """Precision / recall for a given boolean alert set (weighted)."""
+    tp = float(w[alert & (y == 1)].sum())
+    aw, pw = float(w[alert].sum()), float(w[y == 1].sum())
+    out = {"alerts": int(alert.sum()), "alert_rate": aw / w.sum(),
+           "precision": tp / aw if aw else np.nan, "recall": tp / pw if pw else np.nan,
+           "true_positives": int((alert & (y == 1)).sum())}
+    out["lift"] = out["precision"] / prevalence(y, w) if aw else np.nan
+    if n_days:
+        out["alerts_per_day"] = aw / n_days
+    return out
+
+
+def daily_budget_table(y, s, w, day, budgets=(0.001, 0.0025, 0.005, 0.01, 0.02)) -> pd.DataFrame:
+    n_days = pd.Series(np.asarray(day)).nunique()
+    return pd.DataFrame([{"budget": b, **at_alerts(y, w, daily_topk(s, day, w, b), n_days)} for b in budgets])
+
+
+def per_day(day, y, alert) -> pd.DataFrame:
+    d = pd.DataFrame({"day": np.asarray(day), "y": y, "alert": alert}).assign(tp=lambda d: d.alert & (d.y == 1))
+    t = d.groupby("day").agg(rows=("y", "size"), positives=("y", "sum"),
+                             alerts=("alert", "sum"), true_positives=("tp", "sum"))
+    t["alert_rate"] = t.alerts / t.rows
+    t["precision"] = t.true_positives / t.alerts
+    t["recall"] = t.true_positives / t.positives
+    return t
+
+
 # ------------------------------------------------------------------ breakdowns
 def recall_breakdown(meta: pd.DataFrame, alert: np.ndarray, by: str) -> pd.DataFrame:
     """Recall among positives, grouped by a meta column (positives have weight 1)."""
     pos = meta["y"].to_numpy() == 1
-    d = pd.DataFrame({by: meta.loc[pos, by].astype("object").fillna("(none)").to_numpy(),
-                      "caught": alert[pos]})
+    vals = ["(none)" if pd.isna(v) else v for v in meta.loc[pos, by].tolist()]
+    d = pd.DataFrame({by: vals, "caught": alert[pos]})
     t = d.groupby(by)["caught"].agg(positives="size", caught="sum")
     t["recall"] = t["caught"] / t["positives"]
     return t.sort_values("positives", ascending=False)
@@ -122,12 +170,14 @@ def scheme_summary(sc: pd.DataFrame) -> pd.DataFrame:
 
 # ------------------------------------------------------------------ uncertainty
 def cluster_bootstrap(y, s, w, groups, metric="pr_auc", B: int = 100, seed: int = 0,
-                      budget_thr: float | None = None) -> dict:
+                      budget_thr: float | None = None, alert: np.ndarray | None = None) -> dict:
     """95% interval by resampling groups (sender accounts) with replacement.
 
     Implemented by giving every row the multiplicity of its group in the draw,
     so no data is copied. ``metric`` in {"pr_auc", "recall", "precision"}
-    (the last two need ``budget_thr``).
+    (the last two need ``budget_thr`` or a fixed boolean ``alert`` set, e.g.
+    daily top-k; with ``alert`` the alert set is held fixed and only the
+    accounts are resampled).
     """
     codes, uniq = pd.factorize(pd.Series(groups))
     G = len(uniq)
@@ -142,9 +192,10 @@ def cluster_bootstrap(y, s, w, groups, metric="pr_auc", B: int = 100, seed: int 
             continue
         if metric == "pr_auc":
             vals.append(average_precision_score(yy, ss, sample_weight=ww))
+        elif alert is not None:
+            vals.append(at_alerts(yy, ww, alert[keep])[metric])
         else:
-            r = at_threshold(yy, ss, ww, budget_thr)
-            vals.append(r[metric])
+            vals.append(at_threshold(yy, ss, ww, budget_thr)[metric])
     vals = np.array(vals, float)
     return {"metric": metric, "B": len(vals), "mean": float(np.nanmean(vals)),
             "lo": float(np.nanpercentile(vals, 2.5)), "hi": float(np.nanpercentile(vals, 97.5))}

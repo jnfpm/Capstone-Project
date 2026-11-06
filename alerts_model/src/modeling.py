@@ -118,6 +118,35 @@ def correlated_to_drop(X: pd.DataFrame, cols, threshold: float = CORR_THRESHOLD,
     return drop, pairs.reset_index(drop=True)
 
 
+def own_date(split: Split) -> Split:
+    """Rows whose own date is in this split (drops earlier rows of schemes moved here)."""
+    k = ~split.meta["scheme_moved"].to_numpy(bool)
+    return Split(split.X[k].reset_index(drop=True), split.y[k], split.w[k],
+                 split.meta[k].reset_index(drop=True))
+
+
+def network_reference(split: Split) -> dict:
+    """Median network volume per window on (train) rows - the scale counts are mapped to."""
+    return {c: float(split.meta[c].median()) for c in set(F.NET_FOR_COUNT.values())}
+
+
+def normalise_counts(split: Split, ref: dict) -> Split:
+    """Rescale each window count by ref_volume / network volume in that row's window.
+
+    "8 transfers while the network did 20% more than usual" -> 7. Results are kept
+    as whole numbers and a non-zero count never becomes 0: otherwise a busy day
+    would turn "1 earlier transfer" into 0.73, and a tree split learned at 0.9 on
+    train would read it as "no history". Keeps train's scale. Returns a new Split.
+    """
+    X = split.X.copy()
+    for c, net in F.NET_FOR_COUNT.items():
+        if c in X:
+            v = X[c].to_numpy(float)
+            scaled = np.rint(v * ref[net] / np.maximum(split.meta[net].to_numpy(float), 1.0))
+            X[c] = np.where(v > 0, np.maximum(scaled, 1.0), 0.0)
+    return Split(X, split.y, split.w, split.meta)
+
+
 def downsample_negatives(split: Split, frac: float, seed: int = 0) -> Split:
     """Keep every positive and ``frac`` of negatives; negatives' weight /= frac.
 
@@ -350,23 +379,46 @@ def reason_text(contrib: pd.DataFrame, X: pd.DataFrame, top: int = 3) -> list[st
     return out
 
 
-def save_bundle(path: Path, model, threshold: float, budget: float, info: dict) -> None:
-    """Everything the agent's scoring tool needs: model, feature list, threshold."""
+def save_bundle(path: Path, model, threshold: float, budget: float, info: dict,
+                net_ref: dict | None = None) -> None:
+    """Everything the agent's scoring tool needs.
+
+    model, feature list, alert budget (daily top-k share - the main rule),
+    fallback threshold (from validation), and ``net_ref`` if counts were
+    normalised by network volume (then meta with net_* columns is needed to score).
+    """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump({"model": model, "features": model.features if hasattr(model, "features") else None,
-                 "threshold": float(threshold), "alert_budget": float(budget), "info": info}, path)
+                 "threshold": float(threshold), "alert_budget": float(budget),
+                 "net_ref": net_ref, "info": info}, path)
 
 
 def load_bundle(path: Path) -> dict:
     return joblib.load(path)
 
 
-def score_transactions(bundle: dict, X: pd.DataFrame, explain: bool = True, top: int = 3) -> pd.DataFrame:
-    """Score rows of the 03 feature table. Returns score, alert flag and top reasons."""
+def score_transactions(bundle: dict, X: pd.DataFrame, meta: pd.DataFrame | None = None,
+                       explain: bool = True, top: int = 3) -> pd.DataFrame:
+    """Score rows of the 03 feature table -> score, alert flag, top reasons.
+
+    With ``meta`` (the matching *_meta rows): counts are normalised if the model
+    was trained that way, and alerts are the daily top-k (``alert_budget`` share of
+    each day). Without it: alerts use the fixed validation threshold.
+    """
     model = bundle["model"]
+    if bundle.get("net_ref"):
+        if meta is None:
+            raise ValueError("this model uses normalised counts - pass meta (net_* columns)")
+        X = normalise_counts(Split(X, np.zeros(len(X)), np.ones(len(X)), meta.set_index(X.index)),
+                             bundle["net_ref"]).X
     s = model.predict_score(X)
-    out = pd.DataFrame({"score": s, "alert": s >= bundle["threshold"]}, index=X.index)
+    if meta is not None:
+        import evaluation as E
+        alert = E.daily_topk(s, meta["Timestamp"].dt.date.to_numpy(), np.ones(len(s)), bundle["alert_budget"])
+    else:
+        alert = s >= bundle["threshold"]
+    out = pd.DataFrame({"score": s, "alert": alert}, index=X.index)
     if explain and hasattr(model, "contributions"):
         out["reasons"] = reason_text(model.contributions(X), X[model.features], top=top)
     return out

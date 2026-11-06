@@ -60,17 +60,26 @@ and not counted. Hub list and FX table are learned on train dates only.
 
 **Models** (`src/modeling.py`, `src/evaluation.py`): single-feature rule baseline, logistic
 regression, LightGBM; each with all features / without payment format / without payment format
-and `conversion_before` (generator mechanics). Model and alert threshold are chosen on
-validation, test is scored once. Metrics: PR-AUC next to prevalence, precision/recall at fixed
-alert budgets, recall for explained vs unexplained positives, share of schemes with at least
-one alert, 95% intervals by resampling sender accounts.
+and `conversion_before` (generator mechanics). Class weighting, count scaling (raw or rescaled
+by network volume in the same window - `net_*` meta columns) and a small LightGBM grid are
+chosen on validation; test is scored once.
+
+**Alerts** are the top X% of each day's transfers (daily top-k), not a fixed score threshold -
+on the first full run a threshold set on 7 Sept alerted 0.99% of test instead of 0.5%.
+
+**Test metrics** use rows dated 8-10 Sept only. Earlier rows of schemes that end in test are
+all positives with no negatives from their own days and inflate precision (13.0% vs 8.3% on the
+first run); they are used only in the scheme view, where a scheme counts as caught if any of
+its 8-10 Sept transfers is alerted. Metrics: PR-AUC next to prevalence, precision/recall per
+daily budget, recall by explained/format/pattern for each feature set, scheme catch rate per
+feature set, 95% intervals by resampling sender accounts.
 
 **For the agent layer:**
 ```python
 import sys; sys.path.insert(0, "src")
 import modeling as M
 bundle = M.load_bundle("models/txn_scorer.joblib")
-M.score_transactions(bundle, X)   # X = rows of a *_features.parquet -> score, alert, top reasons
+M.score_transactions(bundle, X, meta)   # rows of a *_features / *_meta pair -> score, daily alert, top reasons
 ```
 
 **Using the 02 sample instead of the full file:** `python 03_features.py --sample-dir <folder with

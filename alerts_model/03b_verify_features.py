@@ -146,6 +146,8 @@ empty_f = pd.DataFrame(columns=["Timestamp", "acct_to"])
 empty_t = pd.DataFrame(columns=["Timestamp", "acct_from"])
 
 mismatch = {f: 0 for f in F.COUNT_FEATURES + F.FLAG_FEATURES}
+net_bad = 0
+ns_ts = np.sort(ns["Timestamp"].to_numpy())
 label_bad = 0
 for r in pick.itertuples(index=False):
     t, s, v = r.Timestamp, r.acct_from, r.acct_to
@@ -170,6 +172,10 @@ for r in pick.itertuples(index=False):
         "snd_hub": int(s in hubs_ref), "rcv_hub": int(v in hubs_ref),
     }
     ref["new_pair_48h"] = int(ref["pair_prev_48h"] == 0)
+    for col, delta in (("net_48h", pd.Timedelta(hours=F.LOOKBACK_HOURS)), ("net_24h", pd.Timedelta(hours=24)),
+                       ("net_60m", pd.Timedelta(minutes=60))):
+        lo, hi = np.searchsorted(ns_ts, np.datetime64(t - delta), "left"), np.searchsorted(ns_ts, np.datetime64(t), "left")
+        net_bad += int(getattr(r, col) != hi - lo)
     # the transfer itself, from raw
     me = own[(own.Timestamp == t) & (own.acct_from == s) & (own.acct_to == v)
             & (own["Payment Format"] == r._asdict()["payment_format"])]
@@ -193,6 +199,7 @@ for r in pick.itertuples(index=False):
         mismatch[f] += int(rd[f] != ref[f])
 
 check("label and amount of each picked row match the raw file", label_bad == 0, label_bad)
+check("network volume (net_48h / 24h / 60m) matches brute force", net_bad == 0, net_bad)
 bad = {f: n for f, n in mismatch.items() if n}
 check(f"brute-force recompute of {len(pick):,} random rows: every feature matches", not bad, bad or "")
 

@@ -39,6 +39,7 @@ import time
 from pathlib import Path
 
 import duckdb
+import numpy as np
 import pandas as pd
 
 # ------------------------------------------------------------------ settings
@@ -97,7 +98,17 @@ META_COLUMNS = [
     "row_id", "Timestamp", "day", "split", "own_date_split", "scheme_moved",
     "scheme_truncated", "acct_from", "acct_to", "Attempt ID", "Pattern Type",
     "explained", "history_complete", "Payment Format", "amount_usd", "weight",
+    "net_48h", "net_24h", "net_60m",
 ]
+# Network volume: all scored (non-self) transfers in the same windows as the count
+# features. Meta, not features - used to test whether count drift between days is
+# just total volume, and to optionally rescale counts (modeling.normalise_counts).
+NET_FOR_COUNT = {
+    "pair_prev_48h": "net_48h", "snd_sent_48h": "net_48h", "snd_recv_48h": "net_48h",
+    "rcv_recv_48h": "net_48h", "rcv_sent_48h": "net_48h",
+    "snd_sent_24h": "net_24h", "rcv_recv_24h": "net_24h",
+    "snd_sent_60m": "net_60m", "rcv_recv_60m": "net_60m",
+}
 
 # Never allowed in X (checked by 03b and by modeling.assert_no_leak).
 LEAK_COLUMNS = [
@@ -107,7 +118,7 @@ LEAK_COLUMNS = [
     "acct_from", "acct_to", "Account", "Account.1", "From Bank", "To Bank",
     "Entity ID_from", "Entity ID_to", "Entity Name_from", "Entity Name_to",
     "Bank Name_from", "Bank Name_to", "row_id", "Timestamp", "split", "day",
-    "history_complete", "own_date_split",
+    "history_complete", "own_date_split", "net_48h", "net_24h", "net_60m",
 ]
 
 DATA_DICTIONARY = {
@@ -315,6 +326,29 @@ def build_features(con, log=print) -> None:
         _count_before(con, out, cum, key, ts)
     log(f"{len(jobs)} point-in-time lookups done")
 
+    # ---- network volume in the same windows (per distinct minute, then joined)
+    con.execute("""CREATE OR REPLACE TABLE minutes AS
+                   SELECT "Timestamp" AS ts, COUNT(*) AS n FROM nonself GROUP BY 1""")
+    con.execute("""CREATE OR REPLACE TABLE cum_net AS
+                   SELECT ts, SUM(n) OVER (ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cum
+                   FROM minutes""")
+    con.execute(f"""
+        CREATE OR REPLACE TABLE f_net AS
+        WITH q AS (SELECT ts,
+                          ts - INTERVAL {LOOKBACK_HOURS} HOUR AS t48,
+                          ts - INTERVAL 24 HOUR AS t24,
+                          ts - INTERVAL 60 MINUTE AS t60 FROM minutes)
+        SELECT q.ts,
+               COALESCE(a.cum, 0) - COALESCE(b.cum, 0) AS net_48h,
+               COALESCE(a.cum, 0) - COALESCE(c.cum, 0) AS net_24h,
+               COALESCE(a.cum, 0) - COALESCE(d.cum, 0) AS net_60m
+        FROM q
+        ASOF LEFT JOIN cum_net a ON q.ts > a.ts
+        ASOF LEFT JOIN cum_net b ON q.t48 > b.ts
+        ASOF LEFT JOIN cum_net c ON q.t24 > c.ts
+        ASOF LEFT JOIN cum_net d ON q.t60 > d.ts
+    """)
+
     # ---- conversion right before the send (same minute, same amount)
     con.execute(f"""
         CREATE OR REPLACE TABLE f_conv AS
@@ -342,6 +376,9 @@ def build_features(con, log=print) -> None:
             1.0                                                 AS weight,
 
             n."Timestamp" >= first_ts.t0 + INTERVAL {LOOKBACK_HOURS} HOUR AS history_complete,
+            CAST(nt.net_48h AS BIGINT) AS net_48h,
+            CAST(nt.net_24h AS BIGINT) AS net_24h,
+            CAST(nt.net_60m AS BIGINT) AS net_60m,
 
             CAST(pn.v - pl.v AS INTEGER)                        AS pair_prev_48h,
             CAST(ssn.v - ssl.v AS INTEGER)                      AS snd_sent_48h,
@@ -386,6 +423,7 @@ def build_features(con, log=print) -> None:
         JOIN f_rr_24 rr24 USING (row_id)   JOIN f_rr_60 rr60 USING (row_id)
         JOIN f_rs_now rsn USING (row_id)   JOIN f_rs_lb rsl USING (row_id)
         CROSS JOIN (SELECT MIN("Timestamp") AS t0 FROM base) first_ts
+        JOIN f_net nt ON nt.ts = n."Timestamp"
         LEFT JOIN f_conv cv USING (row_id)
         LEFT JOIN hubs hs ON hs.acct = n.acct_from
         LEFT JOIN hubs hr ON hr.acct = n.acct_to
