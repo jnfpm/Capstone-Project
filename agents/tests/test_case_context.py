@@ -1,6 +1,12 @@
 """Tests for preparing and reviewing a small sample alert."""
 
+import sys
 import unittest
+from pathlib import Path
+
+# Add the repository root when this file is run directly.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from agents.case_context import build_case_context
 from agents.prosecution import create_report
@@ -61,16 +67,27 @@ class CaseContextTests(unittest.TestCase):
         )
 
     def test_prosecution_report_cites_model_output(self):
-        # The draft report uses the shared contract and validates its citations.
+        # A fake text generator keeps this test independent of an API key.
         context = build_case_context(
             "alert-1", self.alert, self.transactions, self.model_output
         )
+        evidence_id = next(
+            item.id for item in context.evidence if item.source == "model_output"
+        )
 
-        report = create_report(context)
+        def fake_generator(system_prompt, user_prompt):
+            return (
+                '{"agent":"prosecution","findings":[{"claim":"The model flagged '
+                'the case for review, not as proof.","evidence_ids":["'
+                + evidence_id
+                + '"]}]}'
+            )
+
+        report = create_report(context, text_generator=fake_generator)
 
         self.assertEqual(report.agent, "prosecution")
         self.assertTrue(report.findings[0].evidence_ids)
-        self.assertIn("not proof", report.findings[0].claim)
+        self.assertEqual(report.findings[0].evidence_ids, [evidence_id])
 
     def test_prosecution_requires_a_flagged_alert(self):
         # A non-alert should not be turned into a prosecution review.

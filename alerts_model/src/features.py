@@ -166,7 +166,7 @@ class Timer:
         print(f"[{time.time() - self.t0:6.1f}s] {msg}", flush=True)
 
 
-def connect(tmp_dir: Path | None = None, memory_limit: str = "4GB", threads: int | None = None):
+def connect(tmp_dir: Path | None = None, memory_limit: str = "2GB", threads: int = 2):
     con = duckdb.connect()
     con.execute(f"SET memory_limit = '{memory_limit}'")
     con.execute("SET preserve_insertion_order = false")

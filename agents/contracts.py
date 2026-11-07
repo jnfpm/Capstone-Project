@@ -1,23 +1,4 @@
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 """Shared evidence and response types used by the agents."""
 
 from dataclasses import dataclass
@@ -26,6 +7,7 @@ from typing import Literal, Sequence
 
 # Keep evidence sources consistent across all agent responses.
 EvidenceSource = Literal["transaction", "case_record", "regulation", "model_output"]
+AgentName = Literal["prosecution", "defense"]
 
 
 @dataclass(frozen=True)
@@ -50,7 +32,7 @@ class Finding:
 class AgentReport:
     """The shared response format for prosecution and defense."""
 
-    agent: Literal["prosecution", "defense"]
+    agent: AgentName
     findings: list[Finding]
 
 

@@ -31,7 +31,10 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--joined", default=str(ROOT / "data" / "processed" / "hi_small_joined.parquet"))
 ap.add_argument("--out", default=None, help="output folder (default data/processed/features[_sample])")
 ap.add_argument("--sample-dir", default=None, help="folder with the 02 time-split sample files")
-ap.add_argument("--memory-limit", default="4GB")
+ap.add_argument("--memory-limit", default="2GB",
+                help="DuckDB memory limit (leave room for Python and the operating system)")
+ap.add_argument("--threads", type=int, default=2,
+                help="DuckDB worker threads; fewer threads reduce peak memory use")
 args = ap.parse_args()
 
 joined = Path(args.joined)
@@ -41,7 +44,8 @@ out = Path(args.out) if args.out else ROOT / "data" / "processed" / (
     "features_sample" if args.sample_dir else "features")
 
 log = F.Timer()
-con = F.connect(tmp_dir=ROOT / "data" / "processed" / "duckdb_tmp", memory_limit=args.memory_limit)
+con = F.connect(tmp_dir=ROOT / "data" / "processed" / "duckdb_tmp",
+                memory_limit=args.memory_limit, threads=args.threads)
 
 log(f"reading {joined.name} (rows before {F.CUTOFF})...")
 F.build_base(con, joined)

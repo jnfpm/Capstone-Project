@@ -1,6 +1,12 @@
 """Small tests for the shared agent response contract."""
 
+import sys
 import unittest
+from pathlib import Path
+
+# Add the repository root when this file is run directly.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from agents.contracts import AgentReport, Evidence, Finding, validate_report
 
