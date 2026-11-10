@@ -111,7 +111,7 @@ class CaseContextTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "requires an alert flagged"):
             create_report(context)
 
-
+# test 3 specific reference cases, not the full dataset of 100+ synthetic cases.
 class ReferenceCaseTests(unittest.TestCase):
     """Check fixture consistency and evidence flow, not real LLM reasoning quality."""
 
