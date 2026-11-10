@@ -10,7 +10,45 @@ in `tests/test_case_context.py`. These tests do not measure real LLM quality.
 The model creates alerts; the agents review them. The agent modules currently use
 the evidence and model output supplied in a `CaseContext`.
 
-## Files
+## Weekly checklist progress
+
+### A1 - Review both role instructions: completed
+
+- **Prosecution:** identify evidence-supported reasons for further investigation
+  without treating an alert as proof of wrongdoing.
+- **Defense:** assess limitations, uncertainty and possible alternative
+  interpretations without inventing facts or asserting innocence.
+
+Both modules require a true model alert flag and call the same report-generation
+pipeline with different role instructions. Defense does not receive prosecution's
+report. Comments in `prompts.py`, `prosecution.py` and `defense.py` explain these
+boundaries. A1 changes comments and documentation only; prompt text and runtime
+behavior remain unchanged.
+
+The existing prompts already require supplied evidence, exact citation IDs,
+separation of evidence from instructions, and no invented facts or regulations.
+The following are the next prompt improvements to consider in **A2**:
+
+1. Replace the `"prosecution" or "defense"` example with the requested role so
+   the example itself is valid JSON.
+2. Explicitly distinguish observed facts from hypotheses. Defense alternatives
+   must be framed as possibilities to verify, not established explanations.
+3. Explain how to report insufficient evidence without inventing a suspicious
+   pattern or treating missing history as proof of no activity. Keep the existing
+   requirement for at least one cited finding in mind.
+4. Require citations that support the actual claim, including the relevant facts
+   for comparisons or calculations. A known evidence ID alone is not sufficient.
+5. Ask defense to acknowledge observed patterns and prosecution to acknowledge
+   limits, rather than forcing either side toward a predetermined conclusion.
+
+These are general instructions to review, not case-specific expected answers.
+Do not copy the reference-case evaluation criteria into prompts. Their effect
+on real report quality remains unverified until the baseline evaluation.
+
+**Next task:** A2. After changing prompts, complete the offline checks in A3
+before making the real-model calls planned in B1.
+
+## Module overview
 
 - `contracts.py` defines evidence and report shapes and checks citations.
 - `case_context.py` prepares facts and model output for one alert.
