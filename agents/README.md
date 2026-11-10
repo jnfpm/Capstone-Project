@@ -25,28 +25,39 @@ report. Comments in `prompts.py`, `prosecution.py` and `defense.py` explain thes
 boundaries. A1 changes comments and documentation only; prompt text and runtime
 behavior remain unchanged.
 
-The existing prompts already require supplied evidence, exact citation IDs,
-separation of evidence from instructions, and no invented facts or regulations.
-The following are the next prompt improvements to consider in **A2**:
+### A2 - Clarify prompts and fix the JSON example: completed
 
-1. Replace the `"prosecution" or "defense"` example with the requested role so
-   the example itself is valid JSON.
-2. Explicitly distinguish observed facts from hypotheses. Defense alternatives
-   must be framed as possibilities to verify, not established explanations.
-3. Explain how to report insufficient evidence without inventing a suspicious
-   pattern or treating missing history as proof of no activity. Keep the existing
-   requirement for at least one cited finding in mind.
-4. Require citations that support the actual claim, including the relevant facts
-   for comparisons or calculations. A known evidence ID alone is not sufficient.
-5. Ask defense to acknowledge observed patterns and prosecution to acknowledge
-   limits, rather than forcing either side toward a predetermined conclusion.
+`prompts.py` now has three clearly separated parts:
 
-These are general instructions to review, not case-specific expected answers.
-Do not copy the reference-case evaluation criteria into prompts. Their effect
-on real report quality remains unverified until the baseline evaluation.
+1. **Shared evidence rules** apply to both reviewers: use supplied facts, label
+   hypotheses, cite supporting facts for comparisons and calculations, and avoid
+   interpreting missing history as proof of no activity.
+2. **Role instructions** define the two perspectives. Prosecution acknowledges
+   weak or insufficient grounds for suspicion. Defense acknowledges observed
+   patterns and frames alternative explanations as hypotheses to verify.
+3. **User prompt construction** uses `json.dumps` to produce a valid JSON example
+   with the requested role. The example placeholders must be replaced with real
+   findings and supplied evidence IDs.
 
-**Next task:** A2. After changing prompts, complete the offline checks in A3
-before making the real-model calls planned in B1.
+Both roles are told how to express insufficient evidence within the existing
+report contract: return at least one finding explaining a limitation and cite
+what was actually supplied. Citing an alert or score does not prove that external
+history is absent. No report fields, provider settings or orchestration behavior
+were changed. Reference-case answers remain outside the prompts.
+
+### A3 - Offline prompt checks: completed with A2
+
+The regression test in `tests/test_llm.py` checks the actual user prompt sent
+through `generate_report` for both roles. It parses the JSON example, checks its
+role and fields, and verifies that the supplied evidence is unchanged. It uses a
+fake generator and makes no API calls. Existing context and orchestration tests
+also exercise the updated prompts.
+
+Prompt clarity and valid JSON examples do not prove real-model quality. Human
+review against the reference-case criteria remains pending in B1-B2 and C1.
+
+**Next task:** A4 - confirm provider configuration and inspect the evidence before
+starting the real-model baseline in B1.
 
 ## Module overview
 
