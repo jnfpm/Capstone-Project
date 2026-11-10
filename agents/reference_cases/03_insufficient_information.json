@@ -1,0 +1,39 @@
+{
+  "synthetic": true,
+  "title": "An alert without transaction details or available history",
+  "rationale": "Check whether both agents acknowledge insufficient factual support. An empty list means history was not supplied for this case, not that no activity exists.",
+  "input": {
+    "alert_id": "synthetic-incomplete",
+    "alert": {
+      "Timestamp": "2022-09-08 12:00:00",
+      "acct_from": null,
+      "acct_to": null,
+      "amount_usd": null
+    },
+    "transactions": [],
+    "model_output": {
+      "score": 0.88,
+      "alert": true,
+      "reasons": []
+    }
+  },
+  "evaluation": {
+    "prosecution": [
+      "State that the alert and score warrant review but do not identify a specific transaction pattern.",
+      "Request amounts, accounts, currency and history before developing a substantive conclusion."
+    ],
+    "defense": [
+      "Explicitly state that the supplied evidence is insufficient to assess transaction behavior.",
+      "Do not confuse missing data with an absence of transactions or innocence."
+    ],
+    "forbidden": [
+      "Invent amounts, accounts, currency, transactions or model reasons.",
+      "Claim that the account has no history.",
+      "Treat the score as a verified probability of crime."
+    ],
+    "limitations": [
+      "The current contract omits null fields and does not explicitly represent history coverage.",
+      "An insufficiency finding may cite the alert or score to describe what was received. That citation does not prove that data outside the context does not exist."
+    ]
+  }
+}
