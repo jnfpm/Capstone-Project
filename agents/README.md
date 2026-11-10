@@ -1,5 +1,12 @@
 # Agent review flow
 
+## Casos de referência para começar
+
+Os [três casos fictícios e o guia de avaliação](reference_cases/README.md)
+permitem desenvolver os relatórios independentes sem esperar pelo
+pré-processamento. Incluem critérios por papel, comentários em português e
+testes offline. Os testes não avaliam a qualidade de um LLM real.
+
 The model creates alerts; the agents review them. The agent modules currently use
 the evidence and model output supplied in a `CaseContext`.
 

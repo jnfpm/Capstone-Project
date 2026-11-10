@@ -1,0 +1,91 @@
+{
+  "synthetic": true,
+  "title": "Várias entradas seguidas de uma saída quase total",
+  "rationale": "Avaliar se prosecution relaciona montantes, contas e tempos, e se defense reconhece os limites dessa interpretação. O padrão é um motivo para investigar, não uma classificação de crime.",
+  "input": {
+    "alert_id": "synthetic-concentrated",
+    "alert": {
+      "Timestamp": "2022-09-08 10:15:00",
+      "acct_from": "bank-A:central",
+      "acct_to": "bank-B:destino",
+      "amount_usd": 14900,
+      "Payment Format": "ACH"
+    },
+    "transactions": [
+      {
+        "row_id": "in-1",
+        "Timestamp": "2022-09-08 10:00:00",
+        "acct_from": "bank-A:origem-1",
+        "acct_to": "bank-A:central",
+        "Amount Paid": 5000,
+        "Payment Currency": "USD",
+        "amount_usd": 5000,
+        "Payment Format": "ACH",
+        "country_from": "PT",
+        "country_to": "PT"
+      },
+      {
+        "row_id": "in-2",
+        "Timestamp": "2022-09-08 10:05:00",
+        "acct_from": "bank-A:origem-2",
+        "acct_to": "bank-A:central",
+        "Amount Paid": 5000,
+        "Payment Currency": "USD",
+        "amount_usd": 5000,
+        "Payment Format": "ACH",
+        "country_from": "PT",
+        "country_to": "PT"
+      },
+      {
+        "row_id": "in-3",
+        "Timestamp": "2022-09-08 10:10:00",
+        "acct_from": "bank-A:origem-3",
+        "acct_to": "bank-A:central",
+        "Amount Paid": 5000,
+        "Payment Currency": "USD",
+        "amount_usd": 5000,
+        "Payment Format": "ACH",
+        "country_from": "PT",
+        "country_to": "PT"
+      },
+      {
+        "row_id": "out-1",
+        "Timestamp": "2022-09-08 10:15:00",
+        "acct_from": "bank-A:central",
+        "acct_to": "bank-B:destino",
+        "Amount Paid": 14900,
+        "Payment Currency": "USD",
+        "amount_usd": 14900,
+        "Payment Format": "ACH",
+        "country_from": "PT",
+        "country_to": "PT"
+      }
+    ],
+    "model_output": {
+      "score": 0.91,
+      "alert": true,
+      "reasons": [
+        "snd_recv_24h=3"
+      ]
+    }
+  },
+  "evaluation": {
+    "prosecution": [
+      "Relacionar as três entradas de 5000 USD com a saída de 14900 USD da mesma conta, nos 15 minutos apresentados.",
+      "Citar as transações que suportam a relação temporal e os montantes, sem depender apenas do score."
+    ],
+    "defense": [
+      "Reconhecer o padrão observado e a ausência de informação sobre a finalidade económica.",
+      "Apresentar eventual consolidação de fundos apenas como hipótese a verificar, sem inventar atividade comercial."
+    ],
+    "forbidden": [
+      "Afirmar branqueamento comprovado ou culpa.",
+      "Afirmar fracionamento para evitar um limiar legal que não foi fornecido.",
+      "Tratar estas quatro linhas como o histórico completo da conta."
+    ],
+    "limitations": [
+      "Não há finalidade dos pagamentos, identificação dos titulares nem histórico completo.",
+      "O score e as razões são valores simulados, não produzidos pelo modelo treinado."
+    ]
+  }
+}
