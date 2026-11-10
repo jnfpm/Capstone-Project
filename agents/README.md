@@ -1,5 +1,12 @@
 # Agent review flow
 
+## Getting started with reference cases
+
+The [three synthetic cases and evaluation guide](reference_cases/README.md)
+support independent report development while preprocessing is being updated.
+They include role-specific criteria, explanatory comments and offline tests
+in `tests/test_case_context.py`. These tests do not measure real LLM quality.
+
 The model creates alerts; the agents review them. The agent modules currently use
 the evidence and model output supplied in a `CaseContext`.
 
