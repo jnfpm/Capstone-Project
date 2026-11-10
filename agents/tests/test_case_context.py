@@ -1,4 +1,4 @@
-"""Tests for preparing and reviewing a small sample alert."""
+"""Offline tests for case context preparation and the three reference cases."""
 
 import json
 import sys
@@ -113,6 +113,8 @@ class CaseContextTests(unittest.TestCase):
 
 
 class ReferenceCaseTests(unittest.TestCase):
+    """Check fixture consistency and evidence flow, not real LLM reasoning quality."""
+
     def test_case_facts_and_evaluation_criteria_are_present(self):
         for name in CASE_NAMES:
             with self.subTest(case=name):
@@ -124,8 +126,8 @@ class ReferenceCaseTests(unittest.TestCase):
                 for key in ("prosecution", "defense", "forbidden", "limitations"):
                     self.assertTrue(case["evaluation"][key])
 
-        # Estes valores definem a situação pedagógica. Se mudarem, os critérios
-        # também precisam de revisão para não exigirem conclusões sem suporte.
+        # These values define the teaching scenario. If they change, review the
+        # criteria too, so they do not require conclusions unsupported by the data.
         concentrated = load_reference_case(CASE_NAMES[0])["input"]["transactions"]
         self.assertEqual(sum(row["amount_usd"] for row in concentrated[:3]), 15000)
         self.assertEqual(concentrated[3]["amount_usd"], 14900)
@@ -158,8 +160,8 @@ class ReferenceCaseTests(unittest.TestCase):
                     )
                     supplied = json.loads(user_prompt.split("Evidence:\n", 1)[1])
                     self.assertEqual(supplied, expected)
-                    # Uma frase factual simples basta para testar a ligação.
-                    # Não simulamos um bom raciocínio e não o contamos como avaliação.
+                    # A simple factual statement is enough to test the connection.
+                    # This stub does not evaluate the quality of model reasoning.
                     calls.append(role)
                     return json.dumps(
                         {
@@ -173,10 +175,10 @@ class ReferenceCaseTests(unittest.TestCase):
                         }
                     )
 
-                # Esta barreira garante que um erro no teste nunca chama uma API.
+                # Block the provider entry point to prevent accidental API calls.
                 with patch(
                     "agents.llm._generate_text",
-                    side_effect=AssertionError("API proibida"),
+                    side_effect=AssertionError("API calls are disabled in this test"),
                 ):
                     result = review_case(context, text_generator=fake_generator)
                 self.assertEqual(calls, ["prosecution", "defense"])
@@ -190,7 +192,7 @@ class ReferenceCaseTests(unittest.TestCase):
                 self.assertEqual(context, build_reference_context(name))
 
     def test_missing_data_does_not_turn_into_transaction_facts(self):
-        context = build_reference_context("03_informacao_insuficiente")
+        context = build_reference_context("03_insufficient_information")
         self.assertFalse(any(item.source == "transaction" for item in context.evidence))
         self.assertEqual(
             {item.description for item in context.evidence},

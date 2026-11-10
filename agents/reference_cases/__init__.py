@@ -1,4 +1,4 @@
-"""Casos fictícios para desenvolver os revisores sem dados do pré-processamento."""
+"""Synthetic cases for developing reviewers without preprocessing data."""
 
 import json
 from pathlib import Path
@@ -6,24 +6,24 @@ from pathlib import Path
 from agents.case_context import CaseContext, build_case_context
 
 CASE_NAMES = (
-    "01_movimentos_concentrados",
-    "02_pagamentos_regulares",
-    "03_informacao_insuficiente",
+    "01_concentrated_transfers",
+    "02_regular_payments",
+    "03_insufficient_information",
 )
 
 
 def load_reference_case(name: str) -> dict:
-    """Lê os dados e os critérios de avaliação de um dos três casos."""
+    """Read the input data and evaluation criteria for one of the three cases."""
     if name not in CASE_NAMES:
-        raise ValueError(f"Caso de referência desconhecido: {name!r}")
+        raise ValueError(f"Unknown reference case: {name!r}")
     path = Path(__file__).with_name(f"{name}.json")
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def build_reference_context(name: str) -> CaseContext:
-    """Envia apenas factos e resultados simulados ao construtor existente."""
-    # Os critérios são exclusivos da avaliadora. Enviá-los ao LLM revelaria
-    # a resposta esperada e impediria uma avaliação independente dos relatórios.
+    """Pass only facts and simulated model outputs to the existing builder."""
+    # Criteria belong to the evaluator. Sending them to the LLM would reveal
+    # expected answers and undermine independent evaluation of the reports.
     data = load_reference_case(name)["input"]
     return build_case_context(
         alert_id=data["alert_id"],

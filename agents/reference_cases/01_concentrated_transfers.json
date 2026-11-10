@@ -1,13 +1,13 @@
 {
   "synthetic": true,
-  "title": "Várias entradas seguidas de uma saída quase total",
-  "rationale": "Avaliar se prosecution relaciona montantes, contas e tempos, e se defense reconhece os limites dessa interpretação. O padrão é um motivo para investigar, não uma classificação de crime.",
+  "title": "Several incoming transfers followed by an outgoing transfer of nearly the same total",
+  "rationale": "Check whether prosecution connects amounts, accounts and timing, and whether defense acknowledges the limits of that interpretation. The pattern warrants investigation but does not establish a crime.",
   "input": {
     "alert_id": "synthetic-concentrated",
     "alert": {
       "Timestamp": "2022-09-08 10:15:00",
       "acct_from": "bank-A:central",
-      "acct_to": "bank-B:destino",
+      "acct_to": "bank-B:destination",
       "amount_usd": 14900,
       "Payment Format": "ACH"
     },
@@ -15,7 +15,7 @@
       {
         "row_id": "in-1",
         "Timestamp": "2022-09-08 10:00:00",
-        "acct_from": "bank-A:origem-1",
+        "acct_from": "bank-A:source-1",
         "acct_to": "bank-A:central",
         "Amount Paid": 5000,
         "Payment Currency": "USD",
@@ -27,7 +27,7 @@
       {
         "row_id": "in-2",
         "Timestamp": "2022-09-08 10:05:00",
-        "acct_from": "bank-A:origem-2",
+        "acct_from": "bank-A:source-2",
         "acct_to": "bank-A:central",
         "Amount Paid": 5000,
         "Payment Currency": "USD",
@@ -39,7 +39,7 @@
       {
         "row_id": "in-3",
         "Timestamp": "2022-09-08 10:10:00",
-        "acct_from": "bank-A:origem-3",
+        "acct_from": "bank-A:source-3",
         "acct_to": "bank-A:central",
         "Amount Paid": 5000,
         "Payment Currency": "USD",
@@ -52,7 +52,7 @@
         "row_id": "out-1",
         "Timestamp": "2022-09-08 10:15:00",
         "acct_from": "bank-A:central",
-        "acct_to": "bank-B:destino",
+        "acct_to": "bank-B:destination",
         "Amount Paid": 14900,
         "Payment Currency": "USD",
         "amount_usd": 14900,
@@ -71,21 +71,21 @@
   },
   "evaluation": {
     "prosecution": [
-      "Relacionar as três entradas de 5000 USD com a saída de 14900 USD da mesma conta, nos 15 minutos apresentados.",
-      "Citar as transações que suportam a relação temporal e os montantes, sem depender apenas do score."
+      "Connect the three incoming transfers of 5000 USD with the outgoing transfer of 14900 USD from the same account within the 15 minutes shown.",
+      "Cite the transactions supporting the timing and amount relationships rather than relying only on the score."
     ],
     "defense": [
-      "Reconhecer o padrão observado e a ausência de informação sobre a finalidade económica.",
-      "Apresentar eventual consolidação de fundos apenas como hipótese a verificar, sem inventar atividade comercial."
+      "Acknowledge the observed pattern and the lack of information about its economic purpose.",
+      "Present possible fund consolidation only as a hypothesis to verify, without inventing business activity."
     ],
     "forbidden": [
-      "Afirmar branqueamento comprovado ou culpa.",
-      "Afirmar fracionamento para evitar um limiar legal que não foi fornecido.",
-      "Tratar estas quatro linhas como o histórico completo da conta."
+      "Claim proven money laundering or guilt.",
+      "Claim structuring to avoid a legal threshold that was not supplied.",
+      "Treat these four rows as the complete account history."
     ],
     "limitations": [
-      "Não há finalidade dos pagamentos, identificação dos titulares nem histórico completo.",
-      "O score e as razões são valores simulados, não produzidos pelo modelo treinado."
+      "Payment purposes, account holder identities and complete history are unavailable.",
+      "The score and reasons are simulated values, not outputs from the trained model."
     ]
   }
 }
