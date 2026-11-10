@@ -44,7 +44,7 @@ Executar na raiz do projeto, com as dependências instaladas no ambiente virtual
 Se o ambiente tiver outro nome, substituir o caminho do executável.
 
 ```powershell
-.\.venv\Scripts\python.exe -B -m unittest discover -s agents\tests -p "test_reference_cases.py" -v
+.\.venv\Scripts\python.exe -B -m unittest discover -s agents\tests -p "test_case_context.py" -v
 .\.venv\Scripts\python.exe -B -m unittest discover -s agents\tests -v
 ```
 
