@@ -1,5 +1,13 @@
+"""
+Ponto de partida:
+Nos movimentos apresentados, uma conta recebeu três transferências de 5 000 USD de contas diferentes. 
+Cinco minutos depois da última entrada, enviou 14 900 USD para outra conta.
+Não conhecemos a finalidade dos pagamentos nem o histórico completo.
+"""
+
+
+
 {
-  "study_note": "In the supplied transactions, one account received three transfers of 5000 USD from different accounts. Five minutes after the last incoming transfer, it sent 14900 USD to another account. The payment purposes and complete account history are unknown.",
   "synthetic": true,
   "title": "Several incoming transfers followed by an outgoing transfer of nearly the same total",
   "rationale": "Check whether prosecution connects amounts, accounts and timing, and whether defense acknowledges the limits of that interpretation. The pattern warrants investigation but does not establish a crime.",
@@ -74,19 +82,36 @@
     "prosecution": [
       "Connect the three incoming transfers of 5000 USD with the outgoing transfer of 14900 USD from the same account within the 15 minutes shown.",
       "Cite the transactions supporting the timing and amount relationships rather than relying only on the score."
+      "Calculate that the three incoming transfers total 15000 USD and compare this with the outgoing transfer of 14900 USD.",
+      "Identify that the outgoing transfer occurs five minutes after the last incoming transfer.",
+      "Explain why the observed concentration and rapid onward transfer of funds may warrant further investigation, while acknowledging that the payment purpose is unknown.",
+      "When describing the pattern, cite evidence for the relevant accounts, amounts and timestamps."
+
     ],
     "defense": [
       "Acknowledge the observed pattern and the lack of information about its economic purpose.",
       "Present possible fund consolidation only as a hypothesis to verify, without inventing business activity."
+      "Acknowledge the observed timing and amounts rather than dismissing the pattern solely because wrongdoing has not been proven.",
+      "Explain that the supplied transactions do not establish the economic purpose of the transfers or the relationship between the account holders.",
+      "Identify information that would help assess alternative explanations, such as payment documentation and a broader account history.",
+      "Clearly distinguish a possible legitimate explanation from an explanation supported by the supplied evidence."
     ],
     "forbidden": [
       "Claim proven money laundering or guilt.",
       "Claim structuring to avoid a legal threshold that was not supplied.",
       "Treat these four rows as the complete account history."
+      "Count the alerted transaction and its matching transaction row as two separate outgoing transfers.",
+      "Claim that 100 USD is the account's final balance.",
+      "State that the outgoing transfer necessarily used the exact funds received in the three incoming transfers.",
+      "Interpret the score of 0.91 as a verified 91 percent probability of money laundering.",
+      "Assume that different account identifiers necessarily represent different people or organizations."
     ],
     "limitations": [
       "Payment purposes, account holder identities and complete history are unavailable.",
       "The score and reasons are simulated values, not outputs from the trained model."
+      "The opening and closing account balances are not provided.",
+      "The supplied transactions are a selected set and do not establish complete account activity.",
+      "Account identifiers distinguish accounts but do not establish ownership or relationships between account holders."
     ]
   }
 }
