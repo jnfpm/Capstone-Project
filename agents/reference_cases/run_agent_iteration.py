@@ -6,7 +6,9 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# This file lives inside agents/reference_cases. Go up two folders to find
+# the project root, so direct execution can still import the agents package.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from agents import config
 from agents.defense import create_report as defense
 from agents.prosecution import create_report as prosecution
@@ -17,7 +19,7 @@ def main():
     # This is a live experiment, not an offline test. Each case requests two
     # reports; each report currently needs a draft call and an editing call.
     # --help only shows instructions and makes no API calls.
-    project_root = Path(__file__).resolve().parents[1]
+    project_root = Path(__file__).resolve().parents[2]
     parser = argparse.ArgumentParser(
         description="Generate live reports for the three reference cases (uses the paid API)."
     )

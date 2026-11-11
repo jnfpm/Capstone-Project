@@ -122,3 +122,27 @@ response field or verdict is needed to satisfy the current contract.
 These three cases are an initial development set. They are not a representative
 evaluation and do not replace a larger independent set before concluding that
 the agents are ready. Agent debate remains a later step.
+
+## The script beside these cases
+
+`run_agent_iteration.py` belongs here because it runs these three reference cases.
+It reads their inputs, requests prosecution and defense reports, and saves one TXT
+per case. It does not change the case files or decide whether an answer is good.
+
+From the project root, show instructions without using the API:
+
+```powershell
+.\.venv\Scripts\python.exe -B agents/reference_cases/run_agent_iteration.py --help
+```
+
+To intentionally start a new paid experiment:
+
+```powershell
+.\.venv\Scripts\python.exe -B agents/reference_cases/run_agent_iteration.py new_experiment_name
+```
+
+One successful run currently uses 12 model calls: three cases, two roles per case,
+and a draft plus one edit per role. It creates three TXT files, not twelve.
+The default destination is `output/output/`. Use `--output-dir` to choose another
+folder. Choose a fresh experiment name; existing outputs are not overwritten.
+Read the resulting reports against each case's evaluation criteria afterwards.

@@ -106,7 +106,7 @@ had remaining omissions. With identical final prompts, two consecutive Opus sets
 All 22 offline tests passed. The final reports contain 10 and 11 findings across
 six reports, versus 33 in the original baseline; counts alone are not quality.
 See local `output/output/final_iteration_report.txt` for failures, evidence and
-limits. Its appendix consolidates all iteration assessments. Final outputs
+limits. It explains each experiment in plain English. Final outputs
 are `output{1st,2nd,3rd}case_v10_opus.txt` and the corresponding `_check.txt` files.
 These artifacts remain local. Runtime code for both sets is commit `dd0fbbd`.
 The local .env explicitly selects Opus; credentials and .env are not committed.
@@ -129,7 +129,7 @@ Expected answers stay in fixture evaluation fields, outside the model prompts.
 
 ## Running a new experiment
 
-`agents/run_agent_iteration.py` runs the same three fictional cases and saves
+`agents/reference_cases/run_agent_iteration.py` runs the same three fictional cases and saves
 one TXT per case, with both role reports in each file. It does not train a model,
 change prompts, grade prose automatically, or generate new cases. Errors are
 recorded as NOT GRADED. Each successful run currently makes 12 model calls.
@@ -137,13 +137,13 @@ recorded as NOT GRADED. Each successful run currently makes 12 model calls.
 Read instructions without calling the API:
 
 ```powershell
-.\.venv\Scripts\python.exe -B agents/run_agent_iteration.py --help
+.\.venv\Scripts\python.exe -B agents/reference_cases/run_agent_iteration.py --help
 ```
 
 Only when intentionally starting a new paid experiment:
 
 ```powershell
-.\.venv\Scripts\python.exe -B agents/run_agent_iteration.py new_experiment_name
+.\.venv\Scripts\python.exe -B agents/reference_cases/run_agent_iteration.py new_experiment_name
 ```
 
 Choose a new name each time. Existing outputs are never overwritten. Use
