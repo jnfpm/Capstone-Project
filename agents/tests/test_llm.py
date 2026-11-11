@@ -231,6 +231,14 @@ class GenerateReportTests(unittest.TestCase):
             report = generate_report("defense", self.evidence)
         self.assertEqual(report.agent, "defense")
         self.assertEqual(report.findings[0].evidence_ids, ["transaction-1"])
+        # Both calls must ask the provider for non-empty findings and citations.
+        # Local validation remains necessary even when the API constrains shape.
+        self.assertEqual(client.messages.create.call_count, 2)
+        for call in client.messages.create.call_args_list:
+            schema = call.kwargs["output_config"]["format"]["schema"]
+            findings = schema["properties"]["findings"]
+            self.assertEqual(findings["minItems"], 1)
+            self.assertEqual(findings["items"]["properties"]["evidence_ids"]["minItems"], 1)
 
 
 if __name__ == "__main__":
