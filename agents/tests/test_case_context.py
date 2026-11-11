@@ -181,7 +181,7 @@ class ReferenceCaseTests(unittest.TestCase):
                     side_effect=AssertionError("API calls are disabled in this test"),
                 ):
                     result = review_case(context, text_generator=fake_generator)
-                self.assertEqual(calls, ["prosecution", "defense"])
+                self.assertEqual(calls, ["prosecution", "prosecution", "defense", "defense"])
                 self.assertEqual(result.prosecution.agent, "prosecution")
                 self.assertEqual(result.defense.agent, "defense")
                 serialized = json.dumps(expected, ensure_ascii=False)

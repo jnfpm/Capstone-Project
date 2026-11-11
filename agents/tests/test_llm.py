@@ -80,7 +80,7 @@ class GenerateReportTests(unittest.TestCase):
 
                 report = generate_report(role, self.evidence, text_generator=fake_generator)
                 self.assertEqual(report.agent, role)
-                self.assertEqual(len(captured), 1)
+                self.assertEqual(len(captured), 2)
                 instructions, evidence_json = captured[0].split("Evidence:\n", 1)
                 example_start = instructions.index("{")
                 example, _ = json.JSONDecoder().raw_decode(instructions[example_start:])
@@ -96,6 +96,53 @@ class GenerateReportTests(unittest.TestCase):
                 self.assertTrue(all(isinstance(item, str) for item in finding["evidence_ids"]))
                 # The format example must not become additional case evidence.
                 self.assertEqual(json.loads(evidence_json), [asdict(e) for e in self.evidence])
+                self.assertEqual(
+                    json.loads(captured[1].split("Evidence:\n", 1)[1]),
+                    [asdict(e) for e in self.evidence],
+                )
+
+    def test_returns_the_revision_and_supplies_only_its_own_draft(self):
+        draft = {
+            "agent": "defense",
+            "findings": [{"claim": "Initial wording.", "evidence_ids": ["transaction-1"]}],
+        }
+        revised = {
+            "agent": "defense",
+            "findings": [{"claim": "Revised wording.", "evidence_ids": ["transaction-1"]}],
+        }
+        generator = Mock(side_effect=[json.dumps(draft), json.dumps(revised)])
+        report = generate_report("defense", self.evidence, text_generator=generator)
+        self.assertEqual(report.findings[0].claim, "Revised wording.")
+        self.assertEqual(generator.call_count, 2)
+        revision_prompt = generator.call_args_list[1].args[1]
+        supplied_draft = json.loads(
+            revision_prompt.split("<draft>\n", 1)[1].split("\n</draft>", 1)[0]
+        )
+        self.assertEqual(supplied_draft, draft)
+
+    def test_rejects_invalid_revision_instead_of_returning_the_draft(self):
+        draft = {
+            "agent": "defense",
+            "findings": [{"claim": "Valid draft.", "evidence_ids": ["transaction-1"]}],
+        }
+        invalid_revision = {
+            "agent": "defense",
+            "findings": [{"claim": "Invalid revision.", "evidence_ids": ["invented-id"]}],
+        }
+        generator = Mock(side_effect=[json.dumps(draft), json.dumps(invalid_revision)])
+        with self.assertRaisesRegex(ValueError, "unknown evidence IDs"):
+            generate_report("defense", self.evidence, text_generator=generator)
+        self.assertEqual(generator.call_count, 2)
+
+    def test_revision_failure_propagates_without_retry(self):
+        draft = {
+            "agent": "defense",
+            "findings": [{"claim": "Valid draft.", "evidence_ids": ["transaction-1"]}],
+        }
+        generator = Mock(side_effect=[json.dumps(draft), RuntimeError("provider unavailable")])
+        with self.assertRaisesRegex(RuntimeError, "provider unavailable"):
+            generate_report("defense", self.evidence, text_generator=generator)
+        self.assertEqual(generator.call_count, 2)
 
     def test_rejects_citation_to_unknown_evidence(self):
         # A well-formed response still fails if its citation is not in this case.

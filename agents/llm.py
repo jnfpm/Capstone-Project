@@ -2,10 +2,11 @@
 
 import json
 from collections.abc import Callable, Sequence
+from dataclasses import asdict
 
 from agents import config
 from agents.contracts import AgentName, AgentReport, Evidence, Finding, validate_report
-from agents.prompts import SYSTEM_PROMPTS, build_user_prompt
+from agents.prompts import SYSTEM_PROMPTS, build_revision_prompt, build_user_prompt
 
 TextGenerator = Callable[[str, str], str]
 
@@ -97,7 +98,7 @@ def generate_report(
     *,
     text_generator: TextGenerator | None = None,
 ) -> AgentReport:
-    """Generate a report, then check its shape and all evidence citations."""
+    """Draft, revise once against the same evidence, and validate both reports."""
     if agent not in SYSTEM_PROMPTS:
         raise ValueError(f"Unsupported agent: {agent!r}.")
 
@@ -118,4 +119,14 @@ def generate_report(
     response_text = generate(SYSTEM_PROMPTS[agent], user_prompt)
     report = _parse_report(response_text, agent)
     validate_report(report, evidence)
-    return report
+
+    # One bounded revision separates analysis from citation and writing checks.
+    # Never feed the other role's report to this step or retry until it looks good.
+    # Reject invalid drafts early, then apply the same validation to the revision.
+    revision_prompt = build_revision_prompt(
+        agent, json.dumps(asdict(report), ensure_ascii=False), evidence_json
+    )
+    revised_text = generate(SYSTEM_PROMPTS[agent], revision_prompt)
+    revised_report = _parse_report(revised_text, agent)
+    validate_report(revised_report, evidence)
+    return revised_report
