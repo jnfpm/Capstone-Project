@@ -59,7 +59,31 @@ review against the reference-case criteria remains pending in B1-B2 and C1.
 **Next task:** A4 - confirm provider configuration and inspect the evidence before
 starting the real-model baseline in B1.
 
-## Module overview
+## Citation coverage and repetition experiment (11 November 2026)
+
+The shared prompts now ask for evidence supporting every factual detail within
+each finding, both sides of comparisons and each record covered by an "all" claim.
+They also ask for distinct analytical points and consolidated missing-data requests.
+No response schema or case-specific expected answer was added.
+
+All 19 offline tests passed. Six new live reports were generated with the same
+configured Anthropic model and 4096-token budget. Original reports were preserved.
+The local text files are `output/pdf/output1stcase_v2.txt`,
+`output/pdf/output2ndcase_v2.txt` and `output/pdf/output3rdcase_v2.txt`.
+The detailed qualitative comparison is `output/pdf/comparison_v1_v2.txt`.
+
+Results are mixed: total findings decreased from 33 to 26, but shorter reports
+still repeated some limitations. Some comparisons had fuller citations; others
+still omitted fields. Case 2 defense introduced an unsupported assertion that a
+PT/USD/ACH combination is unusual. Every cited ID exists, but this does not prove
+that the citations support the entire claim or its interpretation.
+
+These prompts remain an evaluated iteration, not a demonstrated fix. One run per
+role and case cannot establish repeatability; the full verdict records regressions
+as well as improvements. Further prompt changes and runs require a separate
+iteration rather than overwriting these outputs.
+
+## Module reference
 
 - `contracts.py` defines evidence and report shapes and checks citations.
 - `case_context.py` prepares facts and model output for one alert.
