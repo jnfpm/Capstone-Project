@@ -91,8 +91,19 @@ existing Python session after changing configuration.
 The Anthropic adapter rejects `stop_reason=max_tokens` before parsing the text,
 with a clear error naming the configured limit. It does not repair partial JSON
 or retry automatically. Offline tests cover incomplete responses (including
-valid-looking JSON) and a completed report. The new budget still needs a live
-baseline run to confirm whether it is sufficient for this case.
+valid-looking JSON) and a completed report. All 19 offline tests passed.
+
+On 11 November 2026, a live rerun of `01_concentrated_transfers` at 4096 tokens
+completed both reports with `stop_reason=end_turn`. Prosecution used 2219 output
+tokens and defense used 1989; each returned six findings. Both passed the existing
+JSON and citation-ID checks. Semantic assessment is still pending, and this result
+does not establish that the budget is sufficient for every case.
+
+The local run record is saved at
+`output/agent_reviews/baseline_20261111T124947Z/01_concentrated_transfers.json`.
+It includes prompts, evidence, raw responses, reports, model, usage and code commit.
+The earlier failed runs remain separate. These local output files are not included
+in the code commit. B1 is partially complete: cases 2 and 3 still need baseline runs.
 
 ### Review a prepared alert
 
