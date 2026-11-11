@@ -1,5 +1,11 @@
 # Three reference cases for independent reports
 
+## Simple reading guide
+
+Each case has two parts: `input` is what the agents may see; `evaluation` is our
+checklist for reading their answers afterwards. The checklist is not sent to the
+model. Offline tests check the code; live reports let us assess the writing.
+
 These cases are entirely fictional. They support development of prosecution,
 defense and the orchestrator's evidence handoff while preprocessing is being
 updated. They do not represent real customers or ground-truth labels of guilt

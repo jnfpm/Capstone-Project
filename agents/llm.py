@@ -20,6 +20,8 @@ from agents.prompts import (
     build_user_prompt,
 )
 
+# Tests can supply a fake function with the same two text inputs as the API.
+# This lets us test the flow without sending requests or spending API credit.
 TextGenerator = Callable[[str, str], str]
 
 
@@ -48,6 +50,8 @@ def _generate_text(system_prompt: str, user_prompt: str) -> str:
         import anthropic
 
         client = anthropic.Anthropic(api_key=config.API_KEY)
+        # Send the instructions, case text and required answer format together.
+        # The schema controls the format, not whether the claims are correct.
         response = client.messages.create(
             model=config.MODEL,
             max_tokens=config.ANTHROPIC_MAX_TOKENS,
@@ -77,6 +81,8 @@ def _generate_text(system_prompt: str, user_prompt: str) -> str:
 
 def _parse_report(response_text: str, expected_agent: AgentName) -> AgentReport:
     """Convert provider JSON to the shared report type, rejecting bad shapes."""
+    # The API returns text. Turn it into Python data before checking its fields.
+    # Reject a response for the wrong role: defense must not become prosecution.
     try:
         payload = json.loads(response_text)
     except json.JSONDecodeError as error:
@@ -115,6 +121,8 @@ def generate_report(
     if agent not in SYSTEM_PROMPTS:
         raise ValueError(f"Unsupported agent: {agent!r}.")
 
+    # Step 1: turn the supplied facts into text that the model can read.
+    # Both the first draft and its revision receive this same evidence text.
     evidence_json = json.dumps(
         [
             {
@@ -128,18 +136,24 @@ def generate_report(
         ensure_ascii=False,
     )
     user_prompt = build_user_prompt(agent, evidence_json)
+    # Step 2: use the fake function in tests, or the real API in a live review.
     generate = text_generator or _generate_text
     response_text = generate(SYSTEM_PROMPTS[agent], user_prompt)
+    # Step 3: check the draft before asking the model to edit it.
+    # A broken draft stops here; it is not silently accepted.
     report = _parse_report(response_text, agent)
     validate_report(report, evidence)
 
-    # One bounded revision separates analysis from citation and writing checks.
-    # Never feed the other role's report to this step or retry until it looks good.
-    # Reject invalid drafts early, then apply the same validation to the revision.
+# Step 4: ask the same model to edit its own draft ONCE.
+    # It checks wording and references using the original facts.
+    # It never sees the other agent's report. This is not a debate.
+    # Editing can still make mistakes, so the revised report needs checking too.
     revision_prompt = build_revision_prompt(
         agent, json.dumps(asdict(report), ensure_ascii=False), evidence_json
     )
     revised_text = generate(REVISION_SYSTEM_PROMPTS[agent], revision_prompt)
+    # Step 5: check and return the revised version, not the original draft.
+    # If this check fails, report the error instead of hiding it.
     revised_report = _parse_report(revised_text, agent)
     validate_report(revised_report, evidence)
     return revised_report

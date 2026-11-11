@@ -1,5 +1,11 @@
 # Independent agent reviews
 
+## Simple reading guide
+
+Read the flow as: facts -> first draft -> checks -> one edit -> checks -> final report.
+A check of the format is not a check of whether the conclusion is true.
+The two agents work separately; neither reads the other report.
+
 The model creates alerts; prosecution and defense review the supplied evidence.
 The three [fictional reference cases](reference_cases/README.md) let us develop
 this flow while preprocessing changes. They do not prove production readiness.

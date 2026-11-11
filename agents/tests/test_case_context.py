@@ -26,7 +26,8 @@ class CaseContextTests(unittest.TestCase):
     """Use a small synthetic alert to check the full evidence flow."""
 
     def setUp(self):
-        # This sample has transaction facts and model output, not training labels.
+# Include training labels in the test input on purpose. The test below
+        # checks that these answer-revealing fields do NOT reach the agents.
         self.alert = {
             "Timestamp": "2022-09-01 11:05:00",
             "acct_from": "bank-a:account-1",
@@ -102,7 +103,7 @@ class CaseContextTests(unittest.TestCase):
             create_report(context)
 
 
-# test 3 specific reference cases, not the full dataset of 100+ synthetic cases.
+# These tests use our three fictional teaching cases, not the full dataset.
 class ReferenceCaseTests(unittest.TestCase):
     """Check fixture consistency and evidence flow, not real LLM reasoning quality."""
 
@@ -134,6 +135,7 @@ class ReferenceCaseTests(unittest.TestCase):
             with self.subTest(case=name):
                 context = build_reference_context(name)
                 expected = [asdict(item) for item in context.evidence]
+                # Record who is called and compare the facts received each time.
                 calls = []
 
                 def fake_generator(system_prompt, user_prompt, expected=expected, calls=calls):
@@ -165,6 +167,8 @@ class ReferenceCaseTests(unittest.TestCase):
                     side_effect=AssertionError("API calls are disabled in this test"),
                 ):
                     result = review_case(context, text_generator=fake_generator)
+                # Four calls: prosecution draft/edit, then defense draft/edit.
+                # This checks the order, not the quality of the model's writing.
                 self.assertEqual(calls, ["prosecution", "prosecution", "defense", "defense"])
                 self.assertEqual(result.prosecution.agent, "prosecution")
                 self.assertEqual(result.defense.agent, "defense")

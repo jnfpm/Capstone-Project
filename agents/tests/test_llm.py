@@ -101,6 +101,8 @@ class GenerateReportTests(unittest.TestCase):
                     [asdict(e) for e in self.evidence],
                 )
 
+    # Return two different fake answers so we can see which one reaches the caller.
+    # The caller must receive "Revised wording", not "Initial wording".
     def test_returns_the_revision_and_supplies_only_its_own_draft(self):
         draft = {
             "agent": "defense",
@@ -120,6 +122,7 @@ class GenerateReportTests(unittest.TestCase):
         )
         self.assertEqual(supplied_draft, draft)
 
+    # A good draft does not excuse a bad revision. Invented IDs must cause an error.
     def test_rejects_invalid_revision_instead_of_returning_the_draft(self):
         draft = {
             "agent": "defense",
@@ -134,6 +137,8 @@ class GenerateReportTests(unittest.TestCase):
             generate_report("defense", self.evidence, text_generator=generator)
         self.assertEqual(generator.call_count, 2)
 
+    # Pretend the API fails on the second call. The code must report the failure
+    # instead of trying again silently or returning the unfinished draft.
     def test_revision_failure_propagates_without_retry(self):
         draft = {
             "agent": "defense",

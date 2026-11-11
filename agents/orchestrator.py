@@ -22,10 +22,15 @@ def review_case(
 ) -> DebateResult:
     """Create both reports from the same evidence and validate their citations."""
     evidence = list(context.evidence)
+    # Each create_report call does two steps inside llm.py: draft, then edit.
+    # Run prosecution first, then defense. Pass the same case to both.
     prosecution = create_prosecution_report(context, text_generator=text_generator)
+    # Do not pass prosecution here: defense must make its own assessment.
     defense = create_defense_report(context, text_generator=text_generator)
 
     # Check both reports again at the point where they are combined.
     validate_report(prosecution, evidence)
     validate_report(defense, evidence)
+    # Despite its name, DebateResult only holds the two independent reports.
+    # No back-and-forth discussion takes place here yet.
     return DebateResult(prosecution=prosecution, defense=defense)

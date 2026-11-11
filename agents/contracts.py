@@ -8,8 +8,10 @@ from typing import Literal
 EvidenceSource = Literal["transaction", "case_record", "regulation", "model_output"]
 AgentName = Literal["prosecution", "defense"]
 
-# The provider constrains the response shape; validate_report still checks our
-# business rules afterwards. Neither check proves that a cited fact supports prose.
+# This is the answer format we send to Anthropic. Think of it as a blank form:
+# the model must fill in the agent name, conclusions and evidence IDs.
+# minItems=1 means "at least one". additionalProperties=False means "no extra fields".
+# A correct form can still contain a wrong claim, so we also read the reports.
 REPORT_JSON_SCHEMA = {
     "type": "object",
     "properties": {
@@ -42,6 +44,8 @@ REPORT_JSON_SCHEMA = {
 class Evidence:
     """One fact the agents may use to support their findings."""
 
+    # id: the label a report cites. description: the actual supplied fact.
+    # source says what kind of record it is; reference points to its origin.
     id: str
     source: EvidenceSource
     reference: str
@@ -52,6 +56,8 @@ class Evidence:
 class Finding:
     """One claim and the evidence IDs that support it."""
 
+    # Keep the sentence and its references together. Each conclusion must
+    # have its own references, even if another conclusion used them already.
     claim: str
     evidence_ids: list[str]
 
@@ -95,6 +101,8 @@ def validate_report(report: AgentReport, evidence: Sequence[Evidence]) -> None:
             raise ValueError(f"finding {number} needs a claim.")
         if not finding.evidence_ids:
             raise ValueError(f"finding {number} must cite at least one evidence ID.")
+        # This asks "does the cited ID exist?", not "does it prove the sentence?"
+        # Checking what the sentence means is a separate evaluation task.
         unknown_ids = set(finding.evidence_ids) - evidence_ids
         if unknown_ids:
             raise ValueError(
