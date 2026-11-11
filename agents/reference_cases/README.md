@@ -73,11 +73,11 @@ for item in context.evidence:
 
 ## Later evaluation with a real model
 
-The following example makes two calls to the provider configured in `.env` and
+The following example makes four calls to the provider configured in `.env` and
 may incur costs. Run it when you intend to evaluate real reports. It requires
 `PROVIDER`, the corresponding API key and a `MODEL` available to your account.
-This change validates the offline flow and does not verify configured model
-availability.
+Each role drafts and edits once using the same evidence. Use a model available
+to your account; the live evaluation configuration is described in `agents/README.md`.
 
 ```python
 from dataclasses import asdict

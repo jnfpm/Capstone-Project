@@ -1,137 +1,76 @@
-# Agent review flow
+# Independent agent reviews
 
-## Getting started with reference cases
+The model creates alerts; prosecution and defense review the supplied evidence.
+The three [fictional reference cases](reference_cases/README.md) let us develop
+this flow while preprocessing changes. They do not prove production readiness.
 
-The [three synthetic cases and evaluation guide](reference_cases/README.md)
-support independent report development while preprocessing is being updated.
-They include role-specific criteria, explanatory comments and offline tests
-in `tests/test_case_context.py`. These tests do not measure real LLM quality.
+## Current flow
 
-The model creates alerts; the agents review them. The agent modules currently use
-the evidence and model output supplied in a `CaseContext`.
+1. `case_context.py` turns the supplied alert, related transactions and model
+   output into individually identified evidence facts.
+2. `orchestrator.py` gives both reviewers the same context. Neither sees the
+   other reviewer's report.
+3. For each role, `llm.py` requests a draft and validates its shape and IDs.
+4. The same model edits that draft once against the same evidence, using a
+   separate editing instruction. The revision is validated and returned.
 
-## Weekly checklist progress
+That is two model calls per report, four per complete case, when successful.
+This is editing within each independent review, not debate between agents.
+There is no application-level retry or fallback to an unreviewed draft when
+validation fails. Provider SDK transport retries are separate behavior.
 
-### A1 - Review both role instructions: completed
+`prompts.py` asks for material observations, supported calculations and account
+links, followed by one qualified assessment and missing-information request.
+The editing pass removes unsupported details and repeated analytical points.
+It does not guarantee correctness: each factual detail still needs assessment
+against the cited evidence. An existing ID is not proof of semantic support.
 
-- **Prosecution:** identify evidence-supported reasons for further investigation
-  without treating an alert as proof of wrongdoing.
-- **Defense:** assess limitations, uncertainty and possible alternative
-  interpretations without inventing facts or asserting innocence.
+## Configuration and execution
 
-Both modules require a true model alert flag and call the same report-generation
-pipeline with different role instructions. Defense does not receive prosecution's
-report. Comments in `prompts.py`, `prosecution.py` and `defense.py` explain these
-boundaries. A1 changes comments and documentation only; prompt text and runtime
-behavior remain unchanged.
-
-### A2 - Clarify prompts and fix the JSON example: completed
-
-`prompts.py` now has three clearly separated parts:
-
-1. **Shared evidence rules** apply to both reviewers: use supplied facts, label
-   hypotheses, cite supporting facts for comparisons and calculations, and avoid
-   interpreting missing history as proof of no activity.
-2. **Role instructions** define the two perspectives. Prosecution acknowledges
-   weak or insufficient grounds for suspicion. Defense acknowledges observed
-   patterns and frames alternative explanations as hypotheses to verify.
-3. **User prompt construction** uses `json.dumps` to produce a valid JSON example
-   with the requested role. The example placeholders must be replaced with real
-   findings and supplied evidence IDs.
-
-Both roles are told how to express insufficient evidence within the existing
-report contract: return at least one finding explaining a limitation and cite
-what was actually supplied. Citing an alert or score does not prove that external
-history is absent. No report fields, provider settings or orchestration behavior
-were changed. Reference-case answers remain outside the prompts.
-
-### A3 - Offline prompt checks: completed with A2
-
-The regression test in `tests/test_llm.py` checks the actual user prompt sent
-through `generate_report` for both roles. It parses the JSON example, checks its
-role and fields, and verifies that the supplied evidence is unchanged. It uses a
-fake generator and makes no API calls. Existing context and orchestration tests
-also exercise the updated prompts.
-
-Prompt clarity and valid JSON examples do not prove real-model quality. Human
-review against the reference-case criteria remains pending in B1-B2 and C1.
-
-**Next task:** A4 - confirm provider configuration and inspect the evidence before
-starting the real-model baseline in B1.
-
-## Citation coverage and repetition experiment (11 November 2026)
-
-The shared prompts now ask for evidence supporting every factual detail within
-each finding, both sides of comparisons and each record covered by an "all" claim.
-They also ask for distinct analytical points and consolidated missing-data requests.
-No response schema or case-specific expected answer was added.
-
-All 19 offline tests passed. Six new live reports were generated with the same
-configured Anthropic model and 4096-token budget. Original reports were preserved.
-The local text files are `output/pdf/output1stcase_v2.txt`,
-`output/pdf/output2ndcase_v2.txt` and `output/pdf/output3rdcase_v2.txt`.
-The detailed qualitative comparison is `output/pdf/comparison_v1_v2.txt`.
-
-Results are mixed: total findings decreased from 33 to 26, but shorter reports
-still repeated some limitations. Some comparisons had fuller citations; others
-still omitted fields. Case 2 defense introduced an unsupported assertion that a
-PT/USD/ACH combination is unusual. Every cited ID exists, but this does not prove
-that the citations support the entire claim or its interpretation.
-
-These prompts remain an evaluated iteration, not a demonstrated fix. One run per
-role and case cannot establish repeatability; the full verdict records regressions
-as well as improvements. Further prompt changes and runs require a separate
-iteration rather than overwriting these outputs.
-
-## Module reference
-
-- `contracts.py` defines evidence and report shapes and checks citations.
-- `case_context.py` prepares facts and model output for one alert.
-- `prompts.py` gives prosecution and defense separate instructions.
-- `llm.py` calls the provider selected in `config.py`, parses its JSON, and
-  validates the report and its evidence IDs.
-- `prosecution.py` and `defense.py` request their respective reports.
-- `orchestrator.py` runs both sides on the same case context.
-- `service.py` loads and scores a prepared alert before starting the review.
-
-## Running a review
-
-### Anthropic response budget
-
-`agents/config.py` sets `ANTHROPIC_MAX_TOKENS` to 4096 by default. To override
-it locally, add a positive integer to the project-root `.env`, for example:
+Install dependencies from `alerts_model/requirements.txt`. The project-root
+`.env` holds configuration; never commit credentials. The evaluated Anthropic
+configuration is:
 
 ```dotenv
-ANTHROPIC_MAX_TOKENS=4096
+PROVIDER=anthropic
+MODEL=claude-opus-5-5
+ANTHROPIC_MAX_TOKENS=8192
 ```
 
-The first live prosecution review produced incomplete JSON. A diagnostic repeat
-at the original 1200-token limit returned `stop_reason=max_tokens`. The larger
-budget gives reports and their citation IDs more room, but does not guarantee
-completion. It is a maximum, not a requested report length; longer responses can
-increase cost. This setting currently applies only to Anthropic. Restart an
-existing Python session after changing configuration.
+Set `ANTHROPIC_API_KEY` locally as well. `config.py` reads these settings.
+If MODEL is omitted, the Anthropic code default remains `claude-haiku-5-5`.
+Specify the evaluated model explicitly to reproduce that configuration.
+Restart existing Python sessions after changing settings.
 
-The Anthropic adapter rejects `stop_reason=max_tokens` before parsing the text,
-with a clear error naming the configured limit. It does not repair partial JSON
-or retry automatically. Offline tests cover incomplete responses (including
-valid-looking JSON) and a completed report. All 19 offline tests passed.
+Anthropic receives the JSON schema from `contracts.py`. Shape constraints do
+not verify claims. Responses stopped at the token limit are rejected before
+parsing. The 8192-token cap is a maximum per call, not a target length or a
+completion guarantee. Editing adds calls and may increase cost and latency;
+this experiment does not measure costs. Google was not live-evaluated here.
 
-On 11 November 2026, a live rerun of `01_concentrated_transfers` at 4096 tokens
-completed both reports with `stop_reason=end_turn`. Prosecution used 2219 output
-tokens and defense used 1989; each returned six findings. Both passed the existing
-JSON and citation-ID checks. Semantic assessment is still pending, and this result
-does not establish that the budget is sufficient for every case.
+From the repository root, run offline tests without API credentials:
 
-The initial local report and diagnostic files were removed at the user's request.
-For now, inspect one report at a time in the terminal. Cases 2 and 3 still need
-baseline runs, and semantic assessment remains pending.
+```powershell
+.\.venv\Scripts\python.exe -B -m unittest discover -s agents\tests -v
+```
 
-### Review a prepared alert
+Tests cover context, contracts, independent orchestration, prompt construction,
+revision validation and incomplete responses. They use simulated text generation;
+passing them does not establish real-model report quality.
 
-Install the requirements with `pip install -r alerts_model/requirements.txt`,
-set `PROVIDER` and the matching API key in the project-root `.env` file, then
-review an alert by its `row_id`:
+For a live synthetic review (four provider calls):
+
+```python
+from agents.orchestrator import review_case
+from agents.reference_cases import build_reference_context
+
+result = review_case(build_reference_context("01_concentrated_transfers"))
+print(result.prosecution)
+print(result.defense)
+```
+
+For prepared data, `service.py` loads and scores the selected alert's day to
+apply the daily top-k rule, then builds the context and starts review:
 
 ```python
 from agents.service import review_alert
@@ -141,20 +80,42 @@ print(result.debate.prosecution)
 print(result.debate.defense)
 ```
 
-`review_alert` scores all prepared rows from that day so the daily top-k alert
-rule is applied correctly. It then builds the case context and asks the
-orchestrator to make one provider call for each side. Transaction history beyond
-the selected row can be supplied with `related_transactions`; loading that
-history from the raw transaction store is not implemented yet.
+This prepared-data example requires compatible preprocessing/model artifacts;
+its real-data path was not exercised by the synthetic report experiment.
+Related history can be supplied via `related_transactions`. Automatic retrieval
+of broader history from the raw transaction store is not implemented.
 
-Tests pass fake scorers and text generators, so they do not need credentials or
-network access:
+## Evaluation records
 
-```powershell
-python -m unittest discover -s agents\tests -v
-```
+Local plain-text outputs under `output/pdf/` preserve each experimental version.
+They include both roles, citations and execution metadata; the directory name
+is historical. They are local artifacts, not repository fixtures.
 
-The end-to-end loader that reads a selected alert, scores it with the saved
-transaction model, and builds its `CaseContext` is not implemented yet. A small
-`service.py` can own that handoff, leaving the agents independent of whether
-case data comes from Parquet files or a database.
+Prompt-only revisions were insufficient. A bounded editing pass, Anthropic JSON
+schema and larger response cap addressed separate writing/format problems, but
+the Haiku runs still contained substantive errors. Sonnet improved coverage but
+had remaining omissions. With identical final prompts, two consecutive Opus sets
+(six reports each) met the development criteria in qualitative assistant review.
+All 22 offline tests passed. The final reports contain 10 and 11 findings across
+six reports, versus 33 in the original baseline; counts alone are not quality.
+See local `output/pdf/final_iteration_report.txt`, `evaluation_v10_opus.txt` and
+`evaluation_v10_opus_check.txt` for failures, evidence and limits. Final outputs
+are `output{1st,2nd,3rd}case_v10_opus.txt` and the corresponding `_check.txt` files.
+These artifacts remain local. Runtime code for both sets is commit `dd0fbbd`.
+The local .env explicitly selects Opus; credentials and .env are not committed.
+
+Only three development cases are used. A repeat on these cases is a consistency
+check, not an independent evaluation set. Before broader use, add unseen cases
+and human assessment, including the larger evaluation required by the handbook.
+Expected answers stay in fixture evaluation fields, outside the model prompts.
+
+## Module responsibilities
+
+- `config.py`: provider, model, credentials and response budget.
+- `contracts.py`: shared data shapes, JSON schema and structural validation.
+- `case_context.py`: evidence construction and stable IDs.
+- `prompts.py`: role, draft and editing instructions.
+- `llm.py`: provider calls, parsing and validation of both stages.
+- `prosecution.py` / `defense.py`: role entry points requiring a true alert.
+- `orchestrator.py`: independent reviews on the same context.
+- `service.py`: prepared-data scoring and handoff to the agents.

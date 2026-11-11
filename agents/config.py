@@ -1,7 +1,7 @@
 """Central configuration for the agent.
 
 Set PROVIDER to ``google`` or ``anthropic`` in the project-root .env file.
-MODEL defaults to the provider's recommended alias and can be overridden there.
+MODEL uses the provider-specific default below and can be overridden there.
 ANTHROPIC_MAX_TOKENS sets the Anthropic response budget (positive integer, default 8192).
 Store provider credentials in .env; never commit that file.
 """

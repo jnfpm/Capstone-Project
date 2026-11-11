@@ -1,4 +1,4 @@
-"""Run the prosecution and defense drafts for one case."""
+"""Run independent prosecution and defense reviews for one case."""
 
 from dataclasses import dataclass
 
