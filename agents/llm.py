@@ -37,7 +37,7 @@ def _generate_text(system_prompt: str, user_prompt: str) -> str:
         client = anthropic.Anthropic(api_key=config.API_KEY)
         response = client.messages.create(
             model=config.MODEL,
-            max_tokens=1200,
+            max_tokens=config.ANTHROPIC_MAX_TOKENS,
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}],
         )

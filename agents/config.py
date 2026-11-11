@@ -2,6 +2,7 @@
 
 Set PROVIDER to ``google`` or ``anthropic`` in the project-root .env file.
 MODEL defaults to the provider's recommended alias and can be overridden there.
+ANTHROPIC_MAX_TOKENS sets the Anthropic response budget (positive integer, default 4096).
 Store provider credentials in .env; never commit that file.
 """
 
@@ -28,3 +29,13 @@ MODELS = {
     "anthropic": "claude-haiku-5-5",
 }
 MODEL = os.getenv("MODEL", MODELS[PROVIDER]).strip()
+
+# Long evidence IDs also consume response tokens. The first live review was cut
+# off at 1200, so allow more room without hard-coding the budget in the API call.
+# This is an upper limit, not a guarantee that every report will fit.
+try:
+    ANTHROPIC_MAX_TOKENS = int(os.getenv("ANTHROPIC_MAX_TOKENS", "4096"))
+except ValueError as error:
+    raise ValueError("ANTHROPIC_MAX_TOKENS must be a positive integer.") from error
+if ANTHROPIC_MAX_TOKENS <= 0:
+    raise ValueError("ANTHROPIC_MAX_TOKENS must be a positive integer.")

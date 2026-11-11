@@ -72,6 +72,27 @@ starting the real-model baseline in B1.
 
 ## Running a review
 
+### Anthropic response budget
+
+`agents/config.py` sets `ANTHROPIC_MAX_TOKENS` to 4096 by default. To override
+it locally, add a positive integer to the project-root `.env`, for example:
+
+```dotenv
+ANTHROPIC_MAX_TOKENS=4096
+```
+
+The first live prosecution review produced incomplete JSON. A diagnostic repeat
+at the original 1200-token limit returned `stop_reason=max_tokens`. The larger
+budget gives reports and their citation IDs more room, but does not guarantee
+completion. It is a maximum, not a requested report length; longer responses can
+increase cost. This setting currently applies only to Anthropic. Restart an
+existing Python session after changing configuration.
+
+The new budget has not yet been verified with a live report. Explicit handling
+of truncated responses is the next step before repeating the baseline.
+
+### Review a prepared alert
+
 Install the requirements with `pip install -r alerts_model/requirements.txt`,
 set `PROVIDER` and the matching API key in the project-root `.env` file, then
 review an alert by its `row_id`:
