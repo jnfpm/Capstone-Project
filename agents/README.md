@@ -93,9 +93,10 @@ of broader history from the raw transaction store is not implemented.
 
 ## Evaluation records
 
-Local plain-text outputs under `output/pdf/` preserve each experimental version.
-They include both roles, citations and execution metadata; the directory name
-is historical. They are local artifacts, not repository fixtures.
+Local plain-text outputs under `output/output/` preserve each experimental version.
+Each output contains both roles. The three final confirmation outputs and the
+consolidated report are in that folder; the 36 older outputs are in its
+`archive_experiences/` subfolder. These are local artifacts, not repository fixtures.
 
 Prompt-only revisions were insufficient. A bounded editing pass, Anthropic JSON
 schema and larger response cap addressed separate writing/format problems, but
@@ -104,7 +105,7 @@ had remaining omissions. With identical final prompts, two consecutive Opus sets
 (six reports each) met the development criteria in qualitative assistant review.
 All 22 offline tests passed. The final reports contain 10 and 11 findings across
 six reports, versus 33 in the original baseline; counts alone are not quality.
-See local `output/pdf/final_iteration_report.txt` for failures, evidence and
+See local `output/output/final_iteration_report.txt` for failures, evidence and
 limits. Its appendix consolidates all iteration assessments. Final outputs
 are `output{1st,2nd,3rd}case_v10_opus.txt` and the corresponding `_check.txt` files.
 These artifacts remain local. Runtime code for both sets is commit `dd0fbbd`.
@@ -125,3 +126,26 @@ Expected answers stay in fixture evaluation fields, outside the model prompts.
 - `prosecution.py` / `defense.py`: role entry points requiring a true alert.
 - `orchestrator.py`: independent reviews on the same context.
 - `service.py`: prepared-data scoring and handoff to the agents.
+
+## Running a new experiment
+
+`agents/run_agent_iteration.py` runs the same three fictional cases and saves
+one TXT per case, with both role reports in each file. It does not train a model,
+change prompts, grade prose automatically, or generate new cases. Errors are
+recorded as NOT GRADED. Each successful run currently makes 12 model calls.
+
+Read instructions without calling the API:
+
+```powershell
+.\.venv\Scripts\python.exe -B agents/run_agent_iteration.py --help
+```
+
+Only when intentionally starting a new paid experiment:
+
+```powershell
+.\.venv\Scripts\python.exe -B agents/run_agent_iteration.py new_experiment_name
+```
+
+Choose a new name each time. Existing outputs are never overwritten. Use
+`--output-dir` to choose a different folder. Assess the results afterwards against
+the fixture evaluation criteria; creating a file does not mean the report passed.
