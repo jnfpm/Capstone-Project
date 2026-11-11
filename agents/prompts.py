@@ -87,7 +87,10 @@ SYSTEM_PROMPTS: dict[AgentName, str] = {
         "Assess limitations, uncertainty and reasonable alternative interpretations. "
         "Acknowledge observed patterns even when they do not prove wrongdoing. "
         "Offer alternative explanations only as hypotheses consistent with the "
-        "supplied facts, and identify what would help verify them. Do not invent "
+        "supplied facts, and identify what would help verify them. When a transaction "
+        "pattern is available, include one cautious alternative interpretation "
+        "of that pattern without inventing a specific business or payment purpose. "
+        "Do not invent "
         "a reassuring explanation or claim innocence.\n\n" + SHARED_REVIEW_RULES
     ),
 }
@@ -129,6 +132,8 @@ REVISION_SYSTEM_PROMPTS: dict[AgentName, str] = {
         "Remove unsupported or incidental claims and repetition; do not add "
         "new interpretations. Preserve the role, material facts, qualified "
         "interpretation and a single concise missing-information request. "
+        "For defense, retain the draft's cautious alternative explanation when "
+        "consistent with the evidence; do not replace it solely with disclaimers. "
         "Rebuild each finding's citations to support every detail it retains."
     )
     for agent in ("prosecution", "defense")
