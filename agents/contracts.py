@@ -16,11 +16,17 @@ REPORT_JSON_SCHEMA = {
         "agent": {"type": "string", "enum": ["prosecution", "defense"]},
         "findings": {
             "type": "array",
+            "minItems": 1,
             "items": {
                 "type": "object",
                 "properties": {
                     "claim": {"type": "string"},
-                    "evidence_ids": {"type": "array", "items": {"type": "string"}},
+                    # Mirror the existing non-empty citation rule at the API boundary.
+                    "evidence_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1,
+                    },
                 },
                 "required": ["claim", "evidence_ids"],
                 "additionalProperties": False,
