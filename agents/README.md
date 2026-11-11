@@ -99,11 +99,9 @@ tokens and defense used 1989; each returned six findings. Both passed the existi
 JSON and citation-ID checks. Semantic assessment is still pending, and this result
 does not establish that the budget is sufficient for every case.
 
-The local run record is saved at
-`output/agent_reviews/baseline_20261111T124947Z/01_concentrated_transfers.json`.
-It includes prompts, evidence, raw responses, reports, model, usage and code commit.
-The earlier failed runs remain separate. These local output files are not included
-in the code commit. B1 is partially complete: cases 2 and 3 still need baseline runs.
+The initial local report and diagnostic files were removed at the user's request.
+For now, inspect one report at a time in the terminal. Cases 2 and 3 still need
+baseline runs, and semantic assessment remains pending.
 
 ### Review a prepared alert
 
