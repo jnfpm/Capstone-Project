@@ -5,11 +5,14 @@ import sys
 import unittest
 from dataclasses import asdict
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 # Add the repository root when this file is run directly.
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from agents import config
 from agents.contracts import Evidence
 from agents.llm import generate_report
 
@@ -119,6 +122,68 @@ class GenerateReportTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "agent and findings"):
             generate_report("defense", self.evidence, text_generator=fake_generator)
+
+    def test_rejects_token_limited_responses_even_with_valid_json(self):
+        # Check our acceptance policy through generate_report, without network
+        # access. A valid-looking fragment must not bypass the completion check.
+        valid_text = json.dumps(
+            {
+                "agent": "prosecution",
+                "findings": [
+                    {
+                        "claim": "A cross-border transfer is supplied.",
+                        "evidence_ids": ["transaction-1"],
+                    }
+                ],
+            }
+        )
+        for text in ('{"agent":', valid_text):
+            with self.subTest(text=text):
+                response = SimpleNamespace(
+                    stop_reason="max_tokens",
+                    content=[SimpleNamespace(type="text", text=text)],
+                )
+                client = SimpleNamespace(
+                    messages=SimpleNamespace(create=Mock(return_value=response))
+                )
+                with (
+                    patch.multiple(
+                        config, PROVIDER="anthropic", API_KEY="test-key", ANTHROPIC_MAX_TOKENS=4096
+                    ),
+                    patch("anthropic.Anthropic", return_value=client),
+                    self.assertRaisesRegex(RuntimeError, "report is incomplete"),
+                ):
+                    generate_report("prosecution", self.evidence)
+
+    def test_accepts_a_completed_anthropic_report(self):
+        # The new completion check must preserve the normal successful path.
+        response = SimpleNamespace(
+            stop_reason="end_turn",
+            content=[
+                SimpleNamespace(
+                    type="text",
+                    text=json.dumps(
+                        {
+                            "agent": "defense",
+                            "findings": [
+                                {
+                                    "claim": "The evidence describes a cross-border transfer.",
+                                    "evidence_ids": ["transaction-1"],
+                                }
+                            ],
+                        }
+                    ),
+                )
+            ],
+        )
+        client = SimpleNamespace(messages=SimpleNamespace(create=Mock(return_value=response)))
+        with (
+            patch.multiple(config, PROVIDER="anthropic", API_KEY="test-key"),
+            patch("anthropic.Anthropic", return_value=client),
+        ):
+            report = generate_report("defense", self.evidence)
+        self.assertEqual(report.agent, "defense")
+        self.assertEqual(report.findings[0].evidence_ids, ["transaction-1"])
 
 
 if __name__ == "__main__":

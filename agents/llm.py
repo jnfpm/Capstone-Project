@@ -41,6 +41,16 @@ def _generate_text(system_prompt: str, user_prompt: str) -> str:
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}],
         )
+        # A token-limited response is incomplete even if its text happens to
+        # parse as JSON. Reject it before parsing rather than repairing or
+        # silently accepting a partial report. Retrying is a separate decision.
+        if response.stop_reason == "max_tokens":
+            raise RuntimeError(
+                "Anthropic stopped at the response token limit "
+                f"(ANTHROPIC_MAX_TOKENS={config.ANTHROPIC_MAX_TOKENS}). "
+                "The report is incomplete and was not accepted. "
+                "Increase the budget or reduce the requested output before retrying."
+            )
         text = "".join(
             block.text for block in response.content if getattr(block, "type", None) == "text"
         )

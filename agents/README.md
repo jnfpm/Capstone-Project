@@ -88,8 +88,11 @@ completion. It is a maximum, not a requested report length; longer responses can
 increase cost. This setting currently applies only to Anthropic. Restart an
 existing Python session after changing configuration.
 
-The new budget has not yet been verified with a live report. Explicit handling
-of truncated responses is the next step before repeating the baseline.
+The Anthropic adapter rejects `stop_reason=max_tokens` before parsing the text,
+with a clear error naming the configured limit. It does not repair partial JSON
+or retry automatically. Offline tests cover incomplete responses (including
+valid-looking JSON) and a completed report. The new budget still needs a live
+baseline run to confirm whether it is sufficient for this case.
 
 ### Review a prepared alert
 
