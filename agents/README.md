@@ -98,8 +98,8 @@ had remaining omissions. With identical final prompts, two consecutive Opus sets
 (six reports each) met the development criteria in qualitative assistant review.
 All 22 offline tests passed. The final reports contain 10 and 11 findings across
 six reports, versus 33 in the original baseline; counts alone are not quality.
-See local `output/pdf/final_iteration_report.txt`, `evaluation_v10_opus.txt` and
-`evaluation_v10_opus_check.txt` for failures, evidence and limits. Final outputs
+See local `output/pdf/final_iteration_report.txt` for failures, evidence and
+limits. Its appendix consolidates all iteration assessments. Final outputs
 are `output{1st,2nd,3rd}case_v10_opus.txt` and the corresponding `_check.txt` files.
 These artifacts remain local. Runtime code for both sets is commit `dd0fbbd`.
 The local .env explicitly selects Opus; credentials and .env are not committed.
