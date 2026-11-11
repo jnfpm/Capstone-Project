@@ -13,7 +13,7 @@ if __package__ in (None, ""):
 
 from agents.case_context import build_case_context
 from agents.orchestrator import review_case
-from agents.prompts import SYSTEM_PROMPTS
+from agents.prompts import REVISION_SYSTEM_PROMPTS, SYSTEM_PROMPTS
 from agents.prosecution import create_report
 from agents.reference_cases import (
     CASE_NAMES,
@@ -53,12 +53,8 @@ class CaseContextTests(unittest.TestCase):
 
     def test_builds_stable_evidence_without_training_labels(self):
         # Rebuilding the same case should produce the same citation IDs.
-        first = build_case_context(
-            "alert-1", self.alert, self.transactions, self.model_output
-        )
-        second = build_case_context(
-            "alert-1", self.alert, self.transactions, self.model_output
-        )
+        first = build_case_context("alert-1", self.alert, self.transactions, self.model_output)
+        second = build_case_context("alert-1", self.alert, self.transactions, self.model_output)
 
         self.assertEqual(
             [item.id for item in first.evidence],
@@ -78,19 +74,13 @@ class CaseContextTests(unittest.TestCase):
 
     def test_prosecution_report_cites_model_output(self):
         # A fake text generator keeps this test independent of an API key.
-        context = build_case_context(
-            "alert-1", self.alert, self.transactions, self.model_output
-        )
-        evidence_id = next(
-            item.id for item in context.evidence if item.source == "model_output"
-        )
+        context = build_case_context("alert-1", self.alert, self.transactions, self.model_output)
+        evidence_id = next(item.id for item in context.evidence if item.source == "model_output")
 
         def fake_generator(system_prompt, user_prompt):
             return (
                 '{"agent":"prosecution","findings":[{"claim":"The model flagged '
-                'the case for review, not as proof.","evidence_ids":["'
-                + evidence_id
-                + '"]}]}'
+                'the case for review, not as proof.","evidence_ids":["' + evidence_id + '"]}]}'
             )
 
         report = create_report(context, text_generator=fake_generator)
@@ -110,6 +100,7 @@ class CaseContextTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "requires an alert flagged"):
             create_report(context)
+
 
 # test 3 specific reference cases, not the full dataset of 100+ synthetic cases.
 class ReferenceCaseTests(unittest.TestCase):
@@ -132,16 +123,11 @@ class ReferenceCaseTests(unittest.TestCase):
         self.assertEqual(sum(row["amount_usd"] for row in concentrated[:3]), 15000)
         self.assertEqual(concentrated[3]["amount_usd"], 14900)
         self.assertTrue(
-            all(
-                row["acct_to"] == concentrated[3]["acct_from"]
-                for row in concentrated[:3]
-            )
+            all(row["acct_to"] == concentrated[3]["acct_from"] for row in concentrated[:3])
         )
         regular = load_reference_case(CASE_NAMES[1])["input"]["transactions"]
         self.assertEqual(len(regular), 3)
-        self.assertEqual(
-            len({(r["acct_from"], r["acct_to"], r["amount_usd"]) for r in regular}), 1
-        )
+        self.assertEqual(len({(r["acct_from"], r["acct_to"], r["amount_usd"]) for r in regular}), 1)
 
     def test_both_reviewers_receive_only_the_same_input_evidence(self):
         for name in CASE_NAMES:
@@ -150,13 +136,11 @@ class ReferenceCaseTests(unittest.TestCase):
                 expected = [asdict(item) for item in context.evidence]
                 calls = []
 
-                def fake_generator(
-                    system_prompt, user_prompt, expected=expected, calls=calls
-                ):
+                def fake_generator(system_prompt, user_prompt, expected=expected, calls=calls):
                     role = next(
                         role
                         for role, prompt in SYSTEM_PROMPTS.items()
-                        if prompt == system_prompt
+                        if system_prompt in (prompt, REVISION_SYSTEM_PROMPTS[role])
                     )
                     supplied = json.loads(user_prompt.split("Evidence:\n", 1)[1])
                     self.assertEqual(supplied, expected)

@@ -1,13 +1,35 @@
-
 """Shared evidence and response types used by the agents."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Literal, Sequence
-
+from typing import Literal
 
 # Keep evidence sources consistent across all agent responses.
 EvidenceSource = Literal["transaction", "case_record", "regulation", "model_output"]
 AgentName = Literal["prosecution", "defense"]
+
+# The provider constrains the response shape; validate_report still checks our
+# business rules afterwards. Neither check proves that a cited fact supports prose.
+REPORT_JSON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "agent": {"type": "string", "enum": ["prosecution", "defense"]},
+        "findings": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "claim": {"type": "string"},
+                    "evidence_ids": {"type": "array", "items": {"type": "string"}},
+                },
+                "required": ["claim", "evidence_ids"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["agent", "findings"],
+    "additionalProperties": False,
+}
 
 
 @dataclass(frozen=True)

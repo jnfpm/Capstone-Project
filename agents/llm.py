@@ -5,8 +5,20 @@ from collections.abc import Callable, Sequence
 from dataclasses import asdict
 
 from agents import config
-from agents.contracts import AgentName, AgentReport, Evidence, Finding, validate_report
-from agents.prompts import SYSTEM_PROMPTS, build_revision_prompt, build_user_prompt
+from agents.contracts import (
+    REPORT_JSON_SCHEMA,
+    AgentName,
+    AgentReport,
+    Evidence,
+    Finding,
+    validate_report,
+)
+from agents.prompts import (
+    REVISION_SYSTEM_PROMPTS,
+    SYSTEM_PROMPTS,
+    build_revision_prompt,
+    build_user_prompt,
+)
 
 TextGenerator = Callable[[str, str], str]
 
@@ -41,6 +53,7 @@ def _generate_text(system_prompt: str, user_prompt: str) -> str:
             max_tokens=config.ANTHROPIC_MAX_TOKENS,
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}],
+            output_config={"format": {"type": "json_schema", "schema": REPORT_JSON_SCHEMA}},
         )
         # A token-limited response is incomplete even if its text happens to
         # parse as JSON. Reject it before parsing rather than repairing or
@@ -126,7 +139,7 @@ def generate_report(
     revision_prompt = build_revision_prompt(
         agent, json.dumps(asdict(report), ensure_ascii=False), evidence_json
     )
-    revised_text = generate(SYSTEM_PROMPTS[agent], revision_prompt)
+    revised_text = generate(REVISION_SYSTEM_PROMPTS[agent], revision_prompt)
     revised_report = _parse_report(revised_text, agent)
     validate_report(revised_report, evidence)
     return revised_report
