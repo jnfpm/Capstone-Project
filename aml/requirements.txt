@@ -1,0 +1,10 @@
+duckdb>=1.1
+pandas
+numpy
+pyarrow
+scikit-learn
+lightgbm>=4.0
+joblib
+matplotlib
+jupyter
+kagglehub        # optional: 01_join downloads the raw files with it; otherwise put them in data/raw/
