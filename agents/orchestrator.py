@@ -22,6 +22,10 @@ def review_case(
 ) -> DebateResult:
     """Create both reports from the same evidence and validate their citations."""
     evidence = list(context.evidence)
+    # Stop if a role or a validation raises an error. Let the caller see it.
+    # We deliberately do not catch errors and return a partial result here.
+    # If prosecution raises, defense is never called. If defense raises,
+    # prosecution has finished, but this function still returns no combined result.
     # Each create_report call does two steps inside llm.py: draft, then edit.
     # Run prosecution first, then defense. Pass the same case to both.
     prosecution = create_prosecution_report(context, text_generator=text_generator)
