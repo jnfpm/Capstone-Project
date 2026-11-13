@@ -1,0 +1,45 @@
+{
+  "synthetic": true,
+  "status": "Prepared for discussion only. Not executed or tested.",
+  "title": "A review request with no evidence at all",
+  "rationale": "Case 03 still supplies a timestamp, model score and alert flag. This case supplies none of those. It is a case about rejecting an unsupported request, not asking the LLM to invent a report.",
+  "reading_guide": [
+    "The alert_id is only a request label. It is not evidence that a transaction happened or that a model selected an alert.",
+    "Empty alert, transactions and model_output mean no factual record was supplied.",
+    "Do not add an alert flag or score to make the request run: that would no longer be an empty-evidence case."
+  ],
+  "integration_note": "This draft is not registered in CASE_NAMES or the experiment runner. Review it as a future offline rejection scenario. The current role entry points require an explicit true model alert, which this input does not contain. These expectations come from reading the code, not from executing this case.",
+  "input": {
+    "alert_id": "synthetic-empty-evidence",
+    "alert": {},
+    "transactions": [],
+    "model_output": {}
+  },
+  "evaluation": {
+    "expected_evidence_count": 0,
+    "prosecution": [
+      "Reject the review request before calling the model because no true model alert is supplied.",
+      "Do not generate an AgentReport or invent evidence IDs to satisfy the report contract."
+    ],
+    "defense": [
+      "If called directly with this empty context, reject it before calling the model.",
+      "Do not offer a legitimate explanation, a suspicious interpretation or invented facts."
+    ],
+    "orchestrator": [
+      "Under the current stop-on-error policy, communicate the prosecution error and do not call defense.",
+      "Return no combined report and make zero language-model calls."
+    ],
+    "forbidden": [
+      "Treat the request label as proof of a selected alert.",
+      "Fill missing information with a fabricated score, flag, amount, account or timestamp.",
+      "Return a successful or partial review disguised as a complete result.",
+      "Conclude that no transactions occurred simply because no records were supplied."
+    ],
+    "limitations": [
+      "This is an input-validation scenario, not a live model-quality evaluation.",
+      "The current AgentReport contract requires at least one finding and a supplied reference; an empty packet cannot support that report.",
+      "No new insufficient-data status or contract change has been implemented.",
+      "Expected rejection behaviour still needs an offline test in a later session. No tests were run when preparing this file."
+    ]
+  }
+}

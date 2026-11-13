@@ -1,0 +1,78 @@
+{
+  "synthetic": true,
+  "status": "Prepared for discussion only. Not executed or tested.",
+  "title": "A payment supported by a fictional agreement and invoice",
+  "rationale": "Unlike the regular-payments case, this case supplies documents describing a payment purpose. Check whether agents use that evidence without treating the documents as proof that all activity is legitimate.",
+  "reading_guide": [
+    "Start with input: it describes the payment and a simulated model alert.",
+    "Then read additional_evidence: these are fictional document excerpts, not evaluation instructions or real attachments.",
+    "Finally read evaluation: these are expectations for the reviewer and must never be sent to the model as evidence."
+  ],
+  "integration_note": "This draft is not registered in CASE_NAMES or the experiment runner. The current build_case_context accepts transaction and model fields but does not load these additional document records. Before executing this case, explicitly connect additional_evidence to CaseContext without passing evaluation or reading notes. No loader change is included in this task.",
+  "input": {
+    "alert_id": "synthetic-documented-payment",
+    "alert": {
+      "Timestamp": "2022-09-08 09:00:00",
+      "acct_from": "bank-A:customer-04",
+      "acct_to": "bank-B:provider-04",
+      "amount_usd": 1200
+    },
+    "transactions": [
+      {
+        "row_id": "documented-payment-04",
+        "Timestamp": "2022-09-08 09:00:00",
+        "acct_from": "bank-A:customer-04",
+        "acct_to": "bank-B:provider-04",
+        "Amount Paid": 1200,
+        "Payment Currency": "USD",
+        "amount_usd": 1200
+      }
+    ],
+    "model_output": {
+      "score": 0.78,
+      "alert": true,
+      "reasons": []
+    }
+  },
+  "additional_evidence": [
+    {
+      "id": "document-04-agreement-payment-terms",
+      "source": "case_record",
+      "reference": "Fictional agreement SYN-AGREEMENT-04, payment terms excerpt",
+      "description": "The supplied agreement states that Customer 04 will pay Service Provider 04 a monthly fee of 1200 USD for bookkeeping services. It identifies bank-A:customer-04 as the payer account and bank-B:provider-04 as the recipient account. The fee for August 2022 is due on 2022-09-08."
+    },
+    {
+      "id": "document-04-invoice-payment-details",
+      "source": "case_record",
+      "reference": "Fictional invoice SYN-INVOICE-04, payment details excerpt",
+      "description": "The supplied invoice, issued on 2022-09-01 by Service Provider 04 to Customer 04, requests 1200 USD for August 2022 bookkeeping services under SYN-AGREEMENT-04. Payment is due on 2022-09-08 from bank-A:customer-04 to bank-B:provider-04."
+    }
+  ],
+  "evaluation": {
+    "prosecution": [
+      "Acknowledge that the agreement and invoice give a documented payment purpose consistent with the supplied transaction amount, currency, account pair and payment date.",
+      "Do not ignore the documents or invent a suspicious explanation merely to defend the alert.",
+      "Explain that the simulated model alert is a review signal, not proof of wrongdoing; no model reasons were supplied.",
+      "Identify any remaining verification as an information gap, not evidence of misconduct."
+    ],
+    "defense": [
+      "Explain that a bookkeeping-service payment is supported by supplied document excerpts, rather than being a guess based only on regularity.",
+      "Compare the actual transaction with the documented amount, currency, payer account, recipient account and due date.",
+      "Cite the relevant transaction fields AND document-04-agreement-payment-terms and document-04-invoice-payment-details when making the document-to-payment comparison.",
+      "Distinguish a documented stated purpose from independently verified authenticity, ownership or delivery of services."
+    ],
+    "forbidden": [
+      "Declare proven innocence or a confirmed false positive.",
+      "Claim that the documents were authenticated or the services were independently verified.",
+      "Treat the alert record and the matching transaction as two payments.",
+      "Claim a history of monthly payments: only one transaction is supplied.",
+      "Treat the two documents as independent verification or infer why the model flagged the payment."
+    ],
+    "limitations": [
+      "All accounts, documents and model values are fictional.",
+      "The excerpts document a stated purpose; authenticity and service delivery have not been checked.",
+      "Complete account history, independent ownership checks and model reasons are unavailable.",
+      "This case has not been executed. Its document-to-context integration remains to be implemented and checked after reviewing the new preprocessing interface."
+    ]
+  }
+}
