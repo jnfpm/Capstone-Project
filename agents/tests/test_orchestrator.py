@@ -77,7 +77,7 @@ class ReviewCaseTests(unittest.TestCase):
                 self.assertTrue(set(finding.evidence_ids) <= evidence_ids)
 
     def test_prosecution_failure_stops_before_defense(self):
-        # patch temporarily replaces a function with a pretend version.
+        # patch temporarily replaces a function with a pretend version. THIS IS IMPORTANT!!!!!
         # side_effect makes that version raise an error instead of returning.
         # Both role functions are replaced, so this test cannot call the API.
         failure = RuntimeError("Prosecution is unavailable.")
