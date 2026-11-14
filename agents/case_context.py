@@ -117,6 +117,7 @@ def build_case_context(
     alert: Mapping[str, object],
     transactions: Sequence[Mapping[str, object]],
     model_output: Mapping[str, object],
+    additional_evidence: Sequence[Mapping[str, object]] = (),
 ) -> CaseContext:
     """Build stable, citeable evidence without exposing training labels."""
     if not alert_id.strip():
@@ -191,5 +192,26 @@ def build_case_context(
                     description=f"Model output reason: {value}",
                 )
             )
+
+    seen_evidence_ids = {item.id for item in evidence}
+    for record in additional_evidence:
+        evidence_id = _display(record.get("id"))
+        reference = _display(record.get("reference"))
+        description = _display(record.get("description"))
+        if not evidence_id or not reference or not description:
+            raise ValueError("additional evidence requires an ID, reference and description.")
+        if _display(record.get("source")) != "case_record":
+            raise ValueError("additional evidence source must be 'case_record'.")
+        if evidence_id in seen_evidence_ids:
+            raise ValueError(f"duplicate evidence ID: {evidence_id!r}.")
+        evidence.append(
+            Evidence(
+                id=evidence_id,
+                source="case_record",
+                reference=reference,
+                description=description,
+            )
+        )
+        seen_evidence_ids.add(evidence_id)
 
     return CaseContext(alert_id=alert_id, evidence=tuple(evidence))

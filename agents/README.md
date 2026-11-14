@@ -7,8 +7,8 @@ A check of the format is not a check of whether the conclusion is true.
 The two agents work separately; neither reads the other report.
 
 The model creates alerts; prosecution and defense review the supplied evidence.
-The three [fictional reference cases](reference_cases/README.md) let us develop
-this flow while preprocessing changes. They do not prove production readiness.
+The [fictional reference cases](reference_cases/README.md) let us develop this
+flow while preprocessing changes. They do not prove production readiness.
 
 ## Current flow
 
@@ -138,10 +138,12 @@ are `output{1st,2nd,3rd}case_v10_opus.txt` and the corresponding `_check.txt` fi
 These artifacts remain local. Runtime code for both sets is commit `dd0fbbd`.
 The local .env explicitly selects Opus; credentials and .env are not committed.
 
-Only three development cases are used. A repeat on these cases is a consistency
-check, not an independent evaluation set. Before broader use, add unseen cases
-and human assessment, including the larger evaluation required by the handbook.
-Expected answers stay in fixture evaluation fields, outside the model prompts.
+The paid runner still uses only the original three development cases. Case 04 is
+now available for offline context checks, but has not been run live. A repeat on
+the original cases is a consistency check, not an independent evaluation set.
+Before broader use, add unseen cases and human assessment, including the larger
+evaluation required by the handbook. Expected answers stay in fixture evaluation
+fields, outside the model prompts.
 
 ## Module responsibilities
 

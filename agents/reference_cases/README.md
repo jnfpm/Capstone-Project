@@ -1,10 +1,11 @@
-# Three reference cases for independent reports
+# Reference cases for independent reports
 
 ## Simple reading guide
 
-Each case has two parts: `input` is what the agents may see; `evaluation` is our
-checklist for reading their answers afterwards. The checklist is not sent to the
-model. Offline tests check the code; live reports let us assess the writing.
+Each case has two parts: `input` and any `additional_evidence` are what the agents
+may see; `evaluation` is our checklist for reading their answers afterwards. The
+checklist is not sent to the model. Offline tests check the code; live reports let
+us assess the writing.
 
 These cases are entirely fictional. They support development of prosecution,
 defense and the orchestrator's evidence handoff while preprocessing is being
@@ -22,16 +23,20 @@ or innocence. They do not introduce debate between the agents.
 | `01_concentrated_transfers.json` | Three incoming transfers of 5000 USD and an outgoing transfer of 14900 USD within 15 minutes | Prosecution connects the facts. Defense acknowledges the pattern and explanations still to verify. |
 | `02_regular_payments.json` | Three monthly payments of 1200 USD between the same accounts | Defense supports regularity with evidence. Prosecution acknowledges the limited grounds for suspicion. |
 | `03_insufficient_information.json` | Only a timestamp, score and alert flag | Both agents acknowledge the limitations and identify missing data. |
+| `04_documented_payment.json` | One payment with fictional agreement and invoice excerpts | Both agents use the stated purpose without treating documents as authenticated proof. |
+
+Case 04 is wired for offline context and simulated-review checks. It is not
+included in the paid experiment runner; do not use that runner for this case yet.
 
 ## Why the cases are organized this way
 
 Each JSON contains `input`, with the arguments for `build_case_context`, and
-`evaluation`, with expected behaviors and prohibited conclusions. `rationale`
-explains the choice of scenario. The `__init__.py` module passes only `input`
-to the context builder. Expected answers stay out of the prompt so the model
-cannot simply copy the evaluation criteria.
+`evaluation`, with expected behaviors and prohibited conclusions. Case 04 also
+contains `additional_evidence`, which supplies the fictional document excerpts.
+`rationale` explains the choice of scenario. The `__init__.py` module passes
+`input` and `additional_evidence` only; expected answers stay out of the prompt.
 
-All cases have `alert: true` because the current reviewers only accept flagged
+Cases 01-04 have `alert: true` because the current reviewers only accept flagged
 alerts. Scores were chosen manually and are not verified probabilities of crime.
 These cases do not test the threshold, daily top-k selection or model detection.
 The rows include the alerted transaction and related movements where available.
@@ -42,13 +47,15 @@ The second case allows a legitimate interpretation but does not prove it. No
 contract or payment purpose is provided. In the third case, `transactions: []`
 means history was not supplied. The current contract does not explicitly convey
 history coverage. Missing evidence in the context does not establish that no
-other transactions exist.
+other transactions exist. Case 04 adds two supplied document excerpts to the
+context; their stated purpose is not independent verification of authenticity
+or service delivery.
 
 ## Offline tests without an API
 
 All context and reference-case tests are in `agents/tests/test_case_context.py`.
 Within that file, `CaseContextTests` covers the existing sample alert and
-`ReferenceCaseTests` covers the three fixtures. Keeping separate classes makes
+`ReferenceCaseTests` covers the four fixtures. Keeping separate classes makes
 failures easier to locate while keeping these tests in one file.
 
 Run these commands from the repository root with dependencies installed in the
@@ -96,8 +103,9 @@ result = review_case(context)
 print(json.dumps(asdict(result), ensure_ascii=False, indent=2))
 ```
 
-Repeat for all three filenames without `.json`, and assess the six independent
-reports. Do not require exact wording from the criteria. For each report, record
+Repeat for the original three filenames without `.json`, and assess the six
+independent reports. Case 04 is not yet included in the live runner. Do not
+require exact wording from the criteria. For each report, record
 the case, role, date, provider, model, code version and generated text. For each
 question below, record "pass", "partial" or "fail", with an example from the
 report and the relevant evidence IDs.
@@ -119,7 +127,7 @@ limitations and cites the received score or flag. Those references describe the
 available data but do not prove the absence of external history. No additional
 response field or verdict is needed to satisfy the current contract.
 
-These three cases are an initial development set. They are not a representative
+These cases are an initial development set. They are not a representative
 evaluation and do not replace a larger independent set before concluding that
 the agents are ready. Agent debate remains a later step.
 

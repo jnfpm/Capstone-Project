@@ -103,7 +103,7 @@ class CaseContextTests(unittest.TestCase):
             create_report(context)
 
 
-# These tests use our three fictional teaching cases, not the full dataset.
+# These tests use our fictional teaching cases, not the full dataset.
 class ReferenceCaseTests(unittest.TestCase):
     """Check fixture consistency and evidence flow, not real LLM reasoning quality."""
 
@@ -190,6 +190,25 @@ class ReferenceCaseTests(unittest.TestCase):
                 "Model output alert: True",
             },
         )
+
+    def test_documented_payment_documents_are_evidence_not_evaluation_text(self):
+        case = load_reference_case("04_documented_payment")
+        context = build_reference_context("04_documented_payment")
+        evidence = {item.id: item for item in context.evidence}
+        evidence_text = json.dumps([asdict(item) for item in context.evidence])
+
+        for document in case["additional_evidence"]:
+            with self.subTest(document=document["id"]):
+                item = evidence[document["id"]]
+                self.assertEqual(item.source, "case_record")
+                self.assertEqual(item.reference, document["reference"])
+                self.assertEqual(item.description, document["description"])
+
+        for section in ("prosecution", "defense", "forbidden", "limitations"):
+            for instruction in case["evaluation"][section]:
+                self.assertNotIn(instruction, evidence_text)
+        for section in ("rationale", "reading_guide", "integration_note", "status"):
+            self.assertNotIn(case[section], evidence_text)
 
     def test_unknown_case_is_rejected(self):
         with self.assertRaises(ValueError):
