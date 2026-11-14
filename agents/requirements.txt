@@ -1,0 +1,6 @@
+# The scorer needs the current pipeline's dependencies.
+-r ../aml/requirements.txt
+# These packages configure and call the existing agent providers.
+python-dotenv
+anthropic
+google-genai

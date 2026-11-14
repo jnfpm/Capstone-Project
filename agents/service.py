@@ -14,9 +14,10 @@ from agents.llm import TextGenerator
 from agents.orchestrator import DebateResult, review_case
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-ALERTS_MODEL_ROOT = PROJECT_ROOT / "alerts_model"
-DEFAULT_FEATURES_DIR = ALERTS_MODEL_ROOT / "data" / "processed" / "features"
-DEFAULT_MODEL_PATH = ALERTS_MODEL_ROOT / "models" / "txn_scorer.joblib"
+# The current preprocessing pipeline lives in aml; alerts_model is the old version.
+AML_ROOT = PROJECT_ROOT / "aml"
+DEFAULT_FEATURES_DIR = AML_ROOT / "data" / "processed" / "preprocessed"
+DEFAULT_MODEL_PATH = AML_ROOT / "models" / "txn_scorer.joblib"
 SPLITS = ("train", "val", "test")
 
 
@@ -31,17 +32,18 @@ class AlertReview:
 
 
 def _get_modeling_module():
-    """Import the existing scorer from alerts_model/src."""
-    source_dir = ALERTS_MODEL_ROOT / "src"
+    """Import the scorer under the name used inside the saved model file."""
+    # joblib needs this exact module name to rebuild the saved Python objects.
+    source_dir = AML_ROOT / "src"
     source_path = str(source_dir.resolve())
     if source_path not in sys.path:
         sys.path.insert(0, source_path)
 
-    modeling = importlib.import_module("modeling")
-    expected_file = (source_dir / "modeling.py").resolve()
+    modeling = importlib.import_module("sample_modeling")
+    expected_file = (source_dir / "sample_modeling.py").resolve()
     if Path(modeling.__file__).resolve() != expected_file:
         raise ImportError(
-            "A different module named 'modeling' is already imported; "
+            "A different module named 'sample_modeling' is already imported; "
             f"expected {expected_file}."
         )
     return modeling
@@ -90,6 +92,22 @@ def _load_day(
     if meta.empty:
         raise ValueError(f"No rows found for {start.date()} in the {split} split.")
 
+    if meta["row_id"].duplicated().any():
+        raise ValueError("Duplicate row_id in metadata rows.")
+    # Match sample_modeling.eval_mask: moved rows and unreachable sampled rows
+    # do not belong in the notebook's daily alert budget. These are sampling
+    # controls only; they are never evidence of suspicious behaviour.
+    required = {"own_date_split", "seed_from", "seed_to", "weight"}
+    missing = required - set(meta.columns)
+    if missing:
+        raise ValueError(f"Missing AML metadata columns: {sorted(missing)}")
+    eligible = (meta["own_date_split"].astype(str) == split) & (
+        (meta["seed_from"] == 1) | (meta["seed_to"] == 1)
+    )
+    meta = meta.loc[eligible]
+    if meta.empty:
+        raise ValueError("No eligible rows for the daily alert budget.")
+
     meta = meta.sort_values("row_id").reset_index(drop=True)
     row_ids = meta["row_id"].tolist()
     features = pd.read_parquet(
@@ -97,6 +115,9 @@ def _load_day(
         columns=["row_id", *feature_names],
         filters=[("row_id", "in", row_ids)],
     )
+    # An ID must identify one transaction, otherwise evidence could be mixed up.
+    if meta["row_id"].duplicated().any() or features["row_id"].duplicated().any():
+        raise ValueError("Duplicate row_id in feature rows or metadata rows.")
     if len(features) != len(meta) or set(features["row_id"]) != set(row_ids):
         raise ValueError("Feature rows and metadata rows do not match for this day.")
 
@@ -135,7 +156,7 @@ def review_alert(
 
     target_rows = meta_day.index[meta_day["row_id"] == row_id].tolist()
     if len(target_rows) != 1:
-        raise ValueError(f"Expected one feature row for row_id={row_id}.")
+        raise ValueError(f"row_id={row_id} is not eligible for the daily alert budget.")
     target_index = target_rows[0]
     model_output = scored.iloc[target_index].to_dict()
     if not bool(model_output.get("alert", False)):

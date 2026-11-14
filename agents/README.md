@@ -33,7 +33,7 @@ against the cited evidence. An existing ID is not proof of semantic support.
 
 ## Configuration and execution
 
-Install dependencies from `alerts_model/requirements.txt`. The project-root
+Install dependencies with `python -m pip install -r agents/requirements.txt`. The project-root
 `.env` holds configuration; never commit credentials. The evaluated Anthropic
 configuration is:
 
@@ -75,12 +75,17 @@ print(result.prosecution)
 print(result.defense)
 ```
 
-For prepared data, `service.py` loads and scores the selected alert's day to
-apply the daily top-k rule, then builds the context and starts review:
+For prepared data, `service.py` uses `aml/src/sample_modeling.py` and
+`aml/models/txn_scorer.joblib`. It loads the selected alert's day from
+`aml/data/processed/preprocessed/{train,val,test}_{features,meta}.parquet`.
+It keeps rows from their own date split with at least one seed account, matching
+the modelling notebook's evaluation population. It then applies the weighted
+daily alert rule, builds the context and starts review:
 
 ```python
 from agents.service import review_alert
 
+# Replace this example ID with an eligible alert from your prepared data.
 result = review_alert(681848)
 print(result.debate.prosecution)
 print(result.debate.defense)
@@ -90,6 +95,28 @@ This prepared-data example requires compatible preprocessing/model artifacts;
 its real-data path was not exercised by the synthetic report experiment.
 Related history can be supplied via `related_transactions`. Automatic retrieval
 of broader history from the raw transaction store is not implemented.
+
+### Integration checkpoint (14 November 2026)
+
+The six prepared parquet files are not present in this checkout. They must come
+from the new preprocessing notebook; the old `alerts_model` files are not a
+substitute. `aml/models/test_scores.parquet` contains evaluation results, not
+the complete feature and history input required by this service.
+
+Offline tests use small parquet files and simulated reports. They check daily
+scoring, row alignment, duplicate IDs, eligibility and exclusion of training
+labels from prompts. They do not measure real report quality.
+
+The saved model was successfully loaded locally, but scikit-learn reported a
+version mismatch: saved estimator 1.5.2, installed 1.9.1. Loading alone does not
+prove equivalent predictions. Reproduce the training environment with the
+modelling author before validating real scores; the dependency lists are not
+a fully pinned environment. No notebook retraining or live API run was done
+for this integration.
+
+Next: obtain the six parquet files, align library versions, verify one complete
+eligible day's scores against the notebook, and connect account history with
+a cutoff at the alert timestamp. Only then evaluate a real case with both agents.
 
 ## Evaluation records
 
