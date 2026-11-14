@@ -1,0 +1,17 @@
+Case: 03_insufficient_information
+Version: v8_sonnet
+Provider: anthropic
+Configured model: claude-sonnet-5-5
+Response budget per call: 8192
+Workflow: draft + one revision per role
+Code commit: 15ab42d4519fb825a2499320d28b20b2d90494fa
+Started (UTC): 2026-11-11T14:16:53.045490+00:00
+
+PROSECUTION - CONCLUSION 1
+The model output flagged this alert (alert: True, score 0.88), and the case record carries a timestamp of 2022-09-08 12:00:00. This signal warrants review, but it is not proof or a verified probability of wrongdoing. No transactions were supplied, so no transaction pattern can be established. To assess the alert, the following are needed: transaction amounts, currencies, sending and receiving accounts, timestamps, relevant account history, and ownership/profile information.
+Evidence: model-synthetic-incomplete-24a0c520-alert, model-synthetic-incomplete-24a0c520-score, alert-synthetic-incomplete-24a0c520-timestamp
+
+DEFENSE - CONCLUSION 1
+No transactions were supplied, so the model signal warrants review but cannot establish a transaction pattern. The packet contains only an alert timestamp and a model output (score 0.88, alert flag True). A model signal is not proof of wrongdoing. To assess the alert, the review needs transaction amounts, sending and receiving accounts, timestamps, and relevant account history.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp, model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert
+

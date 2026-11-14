@@ -1,0 +1,37 @@
+Case: 01_concentrated_transfers
+Version: v6
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget per call: 8192
+Workflow: draft + one revision per role
+Code commit: a742d78fd1b008d464a61b522211fb4d8be9c81c
+Started (UTC): 2026-11-11T14:07:18.505707+00:00
+
+PROSECUTION - CONCLUSION 1
+Three inbound transfers of 5000 each (total 15000) moved from three source accounts (bank-A:source-1, bank-A:source-2, bank-A:source-3) into bank-A:central between 2022-09-08 10:00:00 and 10:10:00. One outbound transfer of 14900 left bank-A:central for bank-B:destination at 2022-09-08 10:15:00, 15 minutes after the first inbound transfer and 5 minutes after the last. The outbound amount is 100 less than the inbound total. This timing and common-account pattern may warrant review of the purpose of the central account's activity.
+Evidence: transaction-in-1-16e990e6-timestamp, transaction-in-1-16e990e6-amount-usd, transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-2-e2dbb589-amount-usd, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-timestamp, transaction-in-3-0b698730-amount-usd, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to
+
+PROSECUTION - CONCLUSION 2
+The case alert record matches the outbound transaction on timestamp (2022-09-08 10:15:00), amount_usd (14900), sending account (bank-A:central) and receiving account (bank-B:destination), so the alert is anchored to the outbound transfer described above.
+Evidence: alert-synthetic-concentrated-e7ac94f0-timestamp, alert-synthetic-concentrated-e7ac94f0-amount-usd, alert-synthetic-concentrated-e7ac94f0-acct-from, alert-synthetic-concentrated-e7ac94f0-acct-to, transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to
+
+PROSECUTION - CONCLUSION 3
+A possible interpretation is that bank-A:central acted as a pass-through or consolidation point for funds from several source accounts shortly before a single outbound transfer, which would justify checking the purpose of those flows. This is not established. The selected packet contains no account ownership or profile information for any listed account and no broader transaction history beyond these transactions, and the 100 difference between inbound and outbound totals is unexplained. Account ownership or profile information and broader transaction history for these accounts are needed to assess this interpretation. The model output (score 0.91, alert true, reason snd_recv_24h=3) is a screening signal, not proof of criminal activity or a verified explanation of the funds' purpose.
+Evidence: transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-1-16e990e6-timestamp, transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-acct-to, transaction-in-3-0b698730-timestamp, transaction-in-3-0b698730-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-usd, model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1
+
+DEFENSE - CONCLUSION 1
+Observed pattern: three ACH-free transfers of 5000 USD each (15000 USD total) were received from bank-A:source-1, bank-A:source-2 and bank-A:source-3 into bank-A:central on 2022-09-08 between 10:00 and 10:10, and one transfer of 14900 USD left bank-A:central for bank-B:destination at 10:15. These are the only transactions supplied, so this shows a pattern in the packet but does not establish its purpose.
+Evidence: transaction-in-1-16e990e6-timestamp, transaction-in-1-16e990e6-amount-usd, transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-2-e2dbb589-amount-usd, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-timestamp, transaction-in-3-0b698730-amount-usd, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to
+
+DEFENSE - CONCLUSION 2
+Timing: the outbound transfer at 10:15 occurred 15 minutes after the first inbound transfer at 10:00 and 5 minutes after the last inbound transfer at 10:10.
+Evidence: transaction-in-1-16e990e6-timestamp, transaction-in-3-0b698730-timestamp, transaction-out-1-f44c30d0-timestamp
+
+DEFENSE - CONCLUSION 3
+Amount difference: the inbound total of 15000 USD (3 x 5000) exceeds the outbound 14900 USD by 100 USD. This difference is not a final balance and does not show that any particular inbound transfer funded the outbound transfer. The supplied records do not support a specific explanation such as a fee, rounding or an unrecorded flow.
+Evidence: transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd, transaction-out-1-f44c30d0-amount-usd
+
+DEFENSE - CONCLUSION 4
+Assessment: the pattern could reflect legitimate collection or pooling activity through bank-A:central, but the packet does not show who owns or controls bank-A:central or the three source accounts, the purpose of the account, or whether the outbound transfer was the intended settlement of the inbound funds. The scoring model flagged this activity (alert true, score 0.91, with the explanation snd_recv_24h=3). This is a model signal, not proof of wrongdoing or a verified explanation. The alert record matches the outbound transfer's account pair, amount and timestamp. Missing information needed to test the alternative explanation: account ownership and profile records for bank-A:central and the three source accounts, the stated purpose of the outbound payment, and account history outside this four-transaction window, since no complete history was supplied.
+Evidence: model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1, alert-synthetic-concentrated-e7ac94f0-amount-usd, alert-synthetic-concentrated-e7ac94f0-timestamp, alert-synthetic-concentrated-e7ac94f0-acct-from, alert-synthetic-concentrated-e7ac94f0-acct-to, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-in-1-16e990e6-acct-from, transaction-in-2-e2dbb589-acct-from, transaction-in-3-0b698730-acct-from
+

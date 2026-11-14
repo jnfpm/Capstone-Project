@@ -1,0 +1,17 @@
+Case: 03_insufficient_information
+Version: v6
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget per call: 8192
+Workflow: draft + one revision per role
+Code commit: a742d78fd1b008d464a61b522211fb4d8be9c81c
+Started (UTC): 2026-11-11T14:08:37.599703+00:00
+
+PROSECUTION - CONCLUSION 1
+The scoring model output flags alert synthetic-incomplete as an alert with a score of 0.88, and the case record shows an alert timestamp of 2022-09-08 12:00:00. These model signals warrant review but are not proof of criminal conduct. No transaction evidence was supplied, so no transaction pattern can be established. To assess whether the alert reflects suspicious activity, the review needs transaction amounts, currencies, sending and receiving accounts, transaction timestamps, and the relevant account history and ownership or profile information.
+Evidence: model-synthetic-incomplete-24a0c520-alert, model-synthetic-incomplete-24a0c520-score, alert-synthetic-incomplete-24a0c520-timestamp
+
+DEFENSE - CONCLUSION 1
+The supplied packet contains a model output with score 0.88 and alert flag True for alert synthetic-incomplete, plus a case timestamp of 2022-09-08 12:00:00. It contains no transaction records, so the model signal warrants review but cannot establish a transaction pattern. A model score is not proof of criminal conduct. No amounts, sending or receiving accounts, or transaction timestamps were supplied, so no transfer flows, account links, or timing relationships can be assessed. To assess the alert, the reviewer needs the underlying transactions with amounts, currencies, sending and receiving accounts, and timestamps, the relevant account history and ownership or profile records, and the model features or rule that produced the alert.
+Evidence: model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert, alert-synthetic-incomplete-24a0c520-timestamp
+

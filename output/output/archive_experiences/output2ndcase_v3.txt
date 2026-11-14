@@ -1,0 +1,40 @@
+Case: 02_regular_payments
+Version: v3
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget: 4096
+Code commit: fe0896644ce9756a3c977219ee6dd0ee0b2ec9f7
+Started (UTC): 2026-11-11T13:59:11.081566+00:00
+
+PROSECUTION - CONCLUSION 1
+The alert transaction is a USD 1200 ACH transfer dated 2022-09-08 09:00:00 from bank-A:customer to bank-B:beneficiary. This is the transaction under review, and the packet does not show what the payment was for.
+Evidence: alert-synthetic-regular-42a409dc-timestamp, alert-synthetic-regular-42a409dc-amount-usd, alert-synthetic-regular-42a409dc-payment-format, alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to
+
+PROSECUTION - CONCLUSION 2
+Three selected transactions share the same sender account (bank-A:customer) and beneficiary account (bank-B:beneficiary), each for 1200 USD, and are dated 2022-07-08, 2022-08-08 and 2022-09-08 at 09:00:00. The equal amounts and one-month spacing are a recurring pattern that merits explanation, although a regular scheduled payment is one possible explanation that the packet cannot confirm.
+Evidence: transaction-regular-1-bbaeff66-timestamp, transaction-regular-1-bbaeff66-amount-usd, transaction-regular-1-bbaeff66-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-timestamp, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-2-bc7eded6-acct-from, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-timestamp, transaction-regular-3-2a92190e-amount-usd, transaction-regular-3-2a92190e-acct-from, transaction-regular-3-2a92190e-acct-to
+
+PROSECUTION - CONCLUSION 3
+The scoring model flagged the alert with an output score of 0.78 and an alert value of True. This is a review signal only. The packet does not explain which features drove the score, so it does not establish that the activity is suspicious.
+Evidence: model-synthetic-regular-42a409dc-score, model-synthetic-regular-42a409dc-alert
+
+PROSECUTION - CONCLUSION 4
+The packet does not allow a complete assessment. It contains only the alert and three selected transactions, with no full account history, no customer or beneficiary profile, no stated purpose for the payments, and no record of any other activity. To assess the pattern, obtain the full account history for bank-A:customer and bank-B:beneficiary, the payment purpose and supporting documents, the beneficiary's relationship to the customer, and the scoring model's feature attributions.
+Evidence: alert-synthetic-regular-42a409dc-timestamp, alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to
+
+DEFENSE - CONCLUSION 1
+The alert record describes a USD 1,200 ACH payment at 2022-09-08 09:00:00 from bank-A:customer to bank-B:beneficiary. Both listed countries are PT, so the packet shows no cross-border leg.
+Evidence: alert-synthetic-regular-42a409dc-timestamp, alert-synthetic-regular-42a409dc-amount-usd, alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to, alert-synthetic-regular-42a409dc-payment-format, transaction-regular-1-bbaeff66-country-from, transaction-regular-1-bbaeff66-country-to
+
+DEFENSE - CONCLUSION 2
+Three transactions in the packet have the same amount (1,200 USD), the same payment format (ACH), the same sender account (bank-A:customer) and the same beneficiary account (bank-B:beneficiary). Their timestamps fall on 2022-07-08, 2022-08-08 and 2022-09-08 at 09:00:00, about one month apart. This regular recurrence is a visible pattern. It could reflect a scheduled or recurring payment, but the packet does not show the purpose or authorization.
+Evidence: transaction-regular-1-bbaeff66-timestamp, transaction-regular-1-bbaeff66-amount-usd, transaction-regular-1-bbaeff66-payment-format, transaction-regular-1-bbaeff66-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-timestamp, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-2-bc7eded6-payment-format, transaction-regular-2-bc7eded6-acct-from, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-timestamp, transaction-regular-3-2a92190e-amount-usd, transaction-regular-3-2a92190e-payment-format, transaction-regular-3-2a92190e-acct-from, transaction-regular-3-2a92190e-acct-to
+
+DEFENSE - CONCLUSION 3
+The scoring model output gives a score of 0.78 and marks the alert as True. This is a review signal that prompts investigation, not proof of criminal activity. The packet does not identify which features drove the score, so the score alone cannot be attributed to any specific behaviour.
+Evidence: model-synthetic-regular-42a409dc-score, model-synthetic-regular-42a409dc-alert
+
+DEFENSE - CONCLUSION 4
+The packet is limited. It contains only three selected transactions and one alert, with no account history, customer or beneficiary profile, stated purpose, or evidence of authorization. It cannot show whether other activity exists or whether the recurrence is legitimate. To assess the alert, obtain the full account history for bank-A:customer and bank-B:beneficiary, the transaction purpose and any mandate or invoice, the customer and beneficiary due-diligence records, and the model feature attributions.
+Evidence: alert-synthetic-regular-42a409dc-timestamp, alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to, model-synthetic-regular-42a409dc-score
+

@@ -1,0 +1,17 @@
+Case: 03_insufficient_information
+Version: v10_opus_check
+Provider: anthropic
+Configured model: claude-opus-5-5
+Response budget per call: 8192
+Workflow: draft + one revision per role
+Code commit: dd0fbbdb897d15c49c05d52f2901f12a8dad5ab4
+Started (UTC): 2026-11-11T14:25:16.933371+00:00
+
+PROSECUTION - CONCLUSION 1
+The supplied packet contains only an alert timestamp (2022-09-08 12:00:00) and a model output flagging an alert with a score of 0.88; no transactions were supplied. The model signal warrants review, but it cannot establish any transaction pattern, and the score is not proof or a verified probability of illicit activity. The absence of transaction records in this packet does not show that no relevant activity exists. To assess whether further investigation is justified, transaction amounts, currencies, sending and receiving accounts, timestamps and relevant account history are needed.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp, model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert
+
+DEFENSE - CONCLUSION 1
+The supplied packet contains only an alert timestamp (2022-09-08 12:00:00) and model output (score 0.88, alert flag True); no transaction records were supplied. The model signal warrants review but is not proof or a verified probability of wrongdoing, and it cannot by itself establish any transaction pattern or support either a suspicious or an alternative interpretation. The absence of transaction records reflects only the scope of the supplied packet and does not show that no underlying activity exists. To assess the alert, the following are needed: transaction amounts, currencies, sending and receiving accounts, timestamps and relevant account history.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp, model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert
+

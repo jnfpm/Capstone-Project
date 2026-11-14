@@ -1,0 +1,48 @@
+Case: 01_concentrated_transfers
+Version: v3
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget: 4096
+Code commit: fe0896644ce9756a3c977219ee6dd0ee0b2ec9f7
+Started (UTC): 2026-11-11T13:58:40.958121+00:00
+
+PROSECUTION - CONCLUSION 1
+Three selected inbound transactions each show amount_usd 5000 credited to bank-A:central, from three different source accounts (bank-A:source-1, bank-A:source-2, bank-A:source-3), at 2022-09-08 10:00:00, 10:05:00 and 10:10:00. The short window and repeated identical amounts into one account may warrant review of whether these are linked.
+Evidence: transaction-in-1-16e990e6-amount-usd, transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-1-16e990e6-timestamp, transaction-in-2-e2dbb589-amount-usd, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-3-0b698730-amount-usd, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-acct-to, transaction-in-3-0b698730-timestamp
+
+PROSECUTION - CONCLUSION 2
+A selected outbound transaction of amount_usd 14900 left bank-A:central for bank-B:destination at 2022-09-08 10:15:00, five minutes after the last selected inbound credit at 10:10:00. This timing suggests the outbound transfer may be the onward movement of the inbound funds, which would need confirmation.
+Evidence: transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-out-1-f44c30d0-timestamp, transaction-in-3-0b698730-timestamp
+
+PROSECUTION - CONCLUSION 3
+The three selected inbound amounts total 15000 USD (5000 each) against a 14900 USD outbound amount, a difference of 100 USD. This closeness is a pattern that may justify asking whether the outbound transfer was funded by the inbound amounts. It is not an account balance, and the packet does not show that these specific funds financed the outbound transfer.
+Evidence: transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd, transaction-out-1-f44c30d0-amount-usd
+
+PROSECUTION - CONCLUSION 4
+The model output has score 0.91 and alert flag True, with the explanation reason 'snd_recv_24h=3'. The feature is quoted literally and is not interpreted here. The score is a review signal only and is not proof of criminal activity or a verified probability.
+Evidence: model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1
+
+PROSECUTION - CONCLUSION 5
+The packet contains only the alert record, four selected transactions and the model output. It does not show account ownership, the purpose of the transfers, account history beyond these selections, or any information about bank-B:destination. The selected transactions are not proof of a complete history or of no other activity. Obtain account ownership and KYC records, full account history for bank-A:central and the source and destination accounts, and the stated purpose of the transfers before drawing conclusions.
+Evidence: alert-synthetic-concentrated-e7ac94f0-acct-to
+
+DEFENSE - CONCLUSION 1
+The selected records show three inbound transfers of 5000 USD each, from bank-A:source-1, bank-A:source-2 and bank-A:source-3 into bank-A:central, at 10:00, 10:05 and 10:10 on 2022-09-08. This is a concentrated pattern in the supplied records, but it does not show who the sources are or why they paid the central account.
+Evidence: transaction-in-1-16e990e6-timestamp, transaction-in-1-16e990e6-amount-usd, transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-2-e2dbb589-amount-usd, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-timestamp, transaction-in-3-0b698730-amount-usd, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-acct-to
+
+DEFENSE - CONCLUSION 2
+The outbound transfer of 14900 USD from bank-A:central to bank-B:destination at 10:15 is 100 USD less than the 15000 USD total of the three inbound transfers. The selected records do not explain this 100 USD difference, and they do not show that specific inbound funds financed the outbound transfer.
+Evidence: transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd
+
+DEFENSE - CONCLUSION 3
+bank-A:central is the common account in all three inbound transfers and in the outbound transfer. One possible benign explanation is that the central account pooled several collections before one disbursement, but the supplied records do not show the account's purpose or the business reason for the disbursement.
+Evidence: transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-acct-from
+
+DEFENSE - CONCLUSION 4
+The model output is a score of 0.91 with alert set to True. The only supplied explanation is the literal feature value 'snd_recv_24h=3', and its meaning is not defined in the packet. The score is a review signal, not proof of wrongdoing or a verified probability.
+Evidence: model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1
+
+DEFENSE - CONCLUSION 5
+Limitation: this review uses only the alert, four selected transactions and the model output. It does not include account history, counterparty identities, account purposes, the reason for the 100 USD difference, or any other activity on these accounts. Obtain full account histories and counterparty information for bank-A:central, the three source accounts and bank-B:destination, plus the business purpose of the inbound and outbound payments and any fees or reversals, before drawing conclusions.
+Evidence: alert-synthetic-concentrated-e7ac94f0-acct-from, alert-synthetic-concentrated-e7ac94f0-acct-to, alert-synthetic-concentrated-e7ac94f0-amount-usd
+

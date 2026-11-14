@@ -1,0 +1,17 @@
+Case: 03_insufficient_information
+Version: v10_opus
+Provider: anthropic
+Configured model: claude-opus-5-5
+Response budget per call: 8192
+Workflow: draft + one revision per role
+Code commit: dd0fbbdb897d15c49c05d52f2901f12a8dad5ab4
+Started (UTC): 2026-11-11T14:23:01.562886+00:00
+
+PROSECUTION - CONCLUSION 1
+The supplied packet contains only an alert timestamp (2022-09-08 12:00:00) and a model output flagging the alert (alert: True, score: 0.88). No transactions were supplied. The model signal warrants review, but it is not proof or a verified probability of wrongdoing, and it cannot establish any transaction pattern on its own. To assess whether further investigation is justified, the following are needed: transaction amounts, currencies, sending and receiving accounts, timestamps, and relevant account history.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp, model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert
+
+DEFENSE - CONCLUSION 1
+The supplied packet contains only an alert timestamp (2022-09-08 12:00:00) and model output (score 0.88, alert flag True); no transactions were supplied, so no transaction pattern, amounts, account links or timing relationships can be established. The model signal warrants review, but it is not proof or a verified probability of wrongdoing, and neither a suspicious nor an alternative interpretation can be assessed from this packet alone. To evaluate the alert, the following are needed: transaction amounts, currencies, sending and receiving accounts, timestamps, and relevant account history.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp, model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert
+

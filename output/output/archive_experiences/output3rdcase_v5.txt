@@ -1,0 +1,17 @@
+Case: 03_insufficient_information
+Version: v5
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget per call: 4096
+Workflow: draft + one revision per role
+Code commit: d109cf39abb348ce4c5102acba1c496307b6b1f7
+Started (UTC): 2026-11-11T14:05:37.124031+00:00
+
+PROSECUTION - CONCLUSION 1
+The scoring model output for alert synthetic-incomplete reports a score of 0.88 and an alert value of True, recorded at 2022-09-08 12:00:00, so the signal warrants review. However, the packet contains no transactions, so it cannot establish any transaction pattern, amounts, account links, or timing relationships. The model output is not proof of criminal conduct or a verified probability of crime. To assess whether the signal reflects suspicious activity, the reviewer needs the underlying transaction records (amounts, currencies, sending and receiving accounts, and timestamps) and any account ownership or transaction history for the accounts involved, as none was supplied.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp, model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert
+
+DEFENSE - CONCLUSION 1
+The packet contains a model output for alert synthetic-incomplete (score 0.88, alert flag True, case timestamp 2022-09-08 12:00:00) but no transactions. It therefore cannot establish a transaction pattern, transaction amounts, currencies, sending or receiving accounts, or any timing relationship between transfers. The model score is not proof of criminal conduct or a verified probability of crime. The alert warrants review, but the purpose of any activity cannot be assessed from this packet. To evaluate it, the reviewer needs the underlying transaction records with amounts, currencies, sending and receiving accounts and timestamps, the ownership and profile information for the accounts involved, and the account history beyond this alert. None of these were supplied in this packet, which does not establish that no other activity exists.
+Evidence: model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert, alert-synthetic-incomplete-24a0c520-timestamp
+

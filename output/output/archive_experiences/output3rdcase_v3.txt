@@ -1,0 +1,24 @@
+Case: 03_insufficient_information
+Version: v3
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget: 4096
+Code commit: fe0896644ce9756a3c977219ee6dd0ee0b2ec9f7
+Started (UTC): 2026-11-11T13:59:27.796945+00:00
+
+PROSECUTION - CONCLUSION 1
+The scoring model flagged alert synthetic-incomplete as an alert, with a model output score of 0.88. This supports further review of the alert as a model signal, but the score alone does not show suspicious activity or establish a probability of criminal conduct.
+Evidence: model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert
+
+PROSECUTION - CONCLUSION 2
+The supplied packet contains only the alert timestamp of 2022-09-08 12:00:00 and the model outputs. It includes no transaction amounts, currencies, account links, counterparties or account history, so the underlying activity behind the alert cannot be assessed. Before any suspicion is evaluated, the reviewer should obtain the transactions linked to this alert with amounts, currencies, account links, timestamps and account history, along with any available model feature attributions. This packet's limits do not show that no other relevant activity exists.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp
+
+DEFENSE - CONCLUSION 1
+The scoring model flagged alert synthetic-incomplete (alert output True) with a score of 0.88, and the case record timestamp is 2022-09-08 12:00:00. The score is a model review signal, not proof of wrongdoing or a verified probability of crime, and the packet does not explain which features drove it.
+Evidence: model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert, alert-synthetic-incomplete-24a0c520-timestamp
+
+DEFENSE - CONCLUSION 2
+The received packet contains only the alert timestamp and model outputs. It includes no transaction amounts, currencies, account links, transaction timestamps, or account history, so the underlying activity cannot be assessed and no alternative explanation can be tested. To complete this review, obtain the transactions behind the alert with amounts, currencies, sending and receiving account links, timestamps, and the relevant account history. Nothing here shows whether other activity exists outside the supplied packet.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp, model-synthetic-incomplete-24a0c520-score
+

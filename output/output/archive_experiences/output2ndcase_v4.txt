@@ -1,0 +1,32 @@
+Case: 02_regular_payments
+Version: v4
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget: 4096
+Code commit: bb7301faf321d4d8a2ef54f98b03408a5e9e90b2
+Started (UTC): 2026-11-11T14:01:36.512729+00:00
+
+PROSECUTION - CONCLUSION 1
+Three selected ACH transfers each show 1200 USD, for a combined 3600 USD across the supplied transaction records (1200 + 1200 + 1200).
+Evidence: transaction-regular-1-bbaeff66-amount-usd, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-3-2a92190e-amount-usd
+
+PROSECUTION - CONCLUSION 2
+The three selected transfers share the same sending account (bank-A:customer) and receiving account (bank-B:beneficiary). Their timestamps are 2022-07-08 09:00:00, 2022-08-08 09:00:00 and 2022-09-08 09:00:00, so the elapsed time is about 31 days from the first to the second transfer and about 31 days from the second to the third, or about 62 days from first to third.
+Evidence: transaction-regular-1-bbaeff66-acct-from, transaction-regular-2-bc7eded6-acct-from, transaction-regular-3-2a92190e-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-acct-to, transaction-regular-1-bbaeff66-timestamp, transaction-regular-2-bc7eded6-timestamp, transaction-regular-3-2a92190e-timestamp
+
+PROSECUTION - CONCLUSION 3
+The alert record for synthetic-regular matches the September transfer (transaction regular-3) on timestamp, sending and receiving accounts, amount and ACH payment format, so the flagged item appears to be that later transfer within the recurring sequence.
+Evidence: alert-synthetic-regular-42a409dc-timestamp, alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to, alert-synthetic-regular-42a409dc-amount-usd, alert-synthetic-regular-42a409dc-payment-format, transaction-regular-3-2a92190e-timestamp, transaction-regular-3-2a92190e-acct-from, transaction-regular-3-2a92190e-acct-to, transaction-regular-3-2a92190e-amount-usd, transaction-regular-3-2a92190e-payment-format
+
+PROSECUTION - CONCLUSION 4
+Possibility, not an established fact: a recurring sequence of identical 1200 USD transfers from bank-A:customer to bank-B:beneficiary at roughly monthly intervals could reflect a scheduled arrangement, or could warrant checking whether the transfers have a legitimate purpose. The supplied packet does not establish intent or wrongdoing. The scoring model output (score 0.78, alert True) is a screening signal, not proof or a verified probability of a crime. No broader account history or ownership and profile information was supplied beyond these selected transactions and account identifiers. Needed to assess the interpretation: the stated purpose of the transfers, the relationship between the parties, and supporting documentation for the payments.
+Evidence: transaction-regular-1-bbaeff66-amount-usd, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-3-2a92190e-amount-usd, transaction-regular-1-bbaeff66-acct-from, transaction-regular-2-bc7eded6-acct-from, transaction-regular-3-2a92190e-acct-from, model-synthetic-regular-42a409dc-score, model-synthetic-regular-42a409dc-alert
+
+DEFENSE - CONCLUSION 1
+Three selected transactions share the same sending account (bank-A:customer) and receiving account (bank-B:beneficiary), each is 1200 USD (3600 USD total), and each is ACH. Their timestamps are 2022-07-08 09:00:00, 2022-08-08 09:00:00 and 2022-09-08 09:00:00, so the gaps are 31 days and 31 days, a regular monthly-interval pattern.
+Evidence: transaction-regular-1-bbaeff66-timestamp, transaction-regular-1-bbaeff66-amount-usd, transaction-regular-1-bbaeff66-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-1-bbaeff66-payment-format, transaction-regular-2-bc7eded6-timestamp, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-2-bc7eded6-acct-from, transaction-regular-2-bc7eded6-acct-to, transaction-regular-2-bc7eded6-payment-format, transaction-regular-3-2a92190e-timestamp, transaction-regular-3-2a92190e-amount-usd, transaction-regular-3-2a92190e-acct-from, transaction-regular-3-2a92190e-acct-to, transaction-regular-3-2a92190e-payment-format
+
+DEFENSE - CONCLUSION 2
+A possible benign explanation is a scheduled recurring payment of a fixed amount between the same two parties, such as a contracted installment, rent, or a standing obligation. The same pattern could also reflect a setup that merits review. Verifying either possibility requires the underlying contract or invoices, the relationship between the customer and beneficiary, and the purpose recorded for each payment. The alert record matches the 2022-09-08 entry in amount, timestamp, accounts and format, and the model output scores it 0.78 with alert True. That model output is a risk signal, not proof of wrongdoing or a verified probability of crime. The supplied packet contains only these three transactions and the alert record, with no broader account history and no ownership or customer profile information, so it cannot show whether the payments were a one-off setup or part of a longer relationship.
+Evidence: transaction-regular-1-bbaeff66-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-1-bbaeff66-timestamp, alert-synthetic-regular-42a409dc-timestamp, alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to, alert-synthetic-regular-42a409dc-amount-usd, alert-synthetic-regular-42a409dc-payment-format, model-synthetic-regular-42a409dc-score, model-synthetic-regular-42a409dc-alert
+

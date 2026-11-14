@@ -1,0 +1,36 @@
+Case: 03_insufficient_information
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget: 4096
+Code commit: 9ccb65d927adfe5a82ea732e830f9137b2babc57
+Run started (UTC): 2026-11-11T13:39:22.587180+00:00
+Assessment: see baseline_evaluation.txt
+
+PROSECUTION - CONCLUSION 1
+The scoring model flagged this alert (alert value True) with a score of 0.88. This is a review signal that warrants human review, not proof of wrongdoing or a verified probability of crime.
+Evidence: model-synthetic-incomplete-24a0c520-alert, model-synthetic-incomplete-24a0c520-score
+
+PROSECUTION - CONCLUSION 2
+The supplied evidence records only the alert timestamp of 2022-09-08 12:00:00. No transactions, amounts, counterparties, account history, or customer profile were supplied, so no specific suspicious transaction pattern can be identified from this evidence.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp
+
+PROSECUTION - CONCLUSION 3
+The model score and alert flag cannot be connected to a particular suspicious activity, because the underlying activity behind the score was not supplied. Further investigation would need the transaction-level activity around the alert timestamp, the customer and account profile, and the model's contributing factors to test whether the flag reflects suspicious conduct or a false positive. Absence of such data here does not show that no activity occurred.
+Evidence: model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert, alert-synthetic-incomplete-24a0c520-timestamp
+
+DEFENSE - CONCLUSION 1
+The model output reports a score of 0.88 and an alert flag of True. These are review signals only. They do not establish wrongdoing or a verified probability of criminal activity, and the supplied output does not explain which features drove the score.
+Evidence: model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert
+
+DEFENSE - CONCLUSION 2
+The supplied case record contains only an alert timestamp of 2022-09-08 12:00:00. It does not include transactions, amounts, counterparties, account history, or customer profile information, so no transaction pattern can be assessed from the supplied evidence.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp
+
+DEFENSE - CONCLUSION 3
+Because the account activity supporting the alert was not supplied, the absence of further activity in this packet does not show that no other activity occurred. The complete transaction history and the alert's triggering rules or features should be obtained before the score is weighed.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp, model-synthetic-incomplete-24a0c520-alert
+
+DEFENSE - CONCLUSION 4
+A possible alternative explanation, which is a hypothesis requiring verification, is that the score reflects input data or features that were not included in this review packet. Verifying this would require the model's input features, data completeness checks, and the underlying transactions for the alert period.
+Evidence: model-synthetic-incomplete-24a0c520-score
+
