@@ -70,6 +70,84 @@ class AgentReport:
     findings: list[Finding]
 
 
+@dataclass(frozen=True)
+class ReplyFinding: # Nós estamos a criar isto porque vamos ter  de responder a varias conclusoes
+    """One response to a numbered conclusion in the prosecution report."""
+
+    # Number 1 means the first prosecution finding, not an evidence ID.
+    prosecution_finding: int
+    position: Literal["agree", "qualify", "disagree"]
+    claim: str
+    evidence_ids: list[str]
+
+
+@dataclass(frozen=True)
+class DefenseReply:
+    """The defense's single reply, kept separate from its original report."""
+
+    agent: Literal["defense"]
+    replies: list[ReplyFinding]
+
+
+# The reply needs a different form from an independent report: every point
+# must say which prosecution conclusion it addresses. Evidence stays separate.
+REPLY_JSON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "agent": {"type": "string", "enum": ["defense"]},
+        "replies": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "prosecution_finding": {"type": "integer", "minimum": 1},
+                    "position": {"type": "string", "enum": ["agree", "qualify", "disagree"]},
+                    "claim": {"type": "string", "minLength": 1},
+                    "evidence_ids": {
+                        "type": "array", "minItems": 1,
+                        "items": {"type": "string"},
+                    },
+                },
+                "required": ["prosecution_finding", "position", "claim", "evidence_ids"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["agent", "replies"],
+    "additionalProperties": False,
+}
+
+
+def validate_reply(
+    reply: DefenseReply, prosecution: AgentReport, evidence: Sequence[Evidence]
+) -> None:
+    """Check response targets and citations, not whether the reasoning is true."""
+    if reply.agent != "defense":
+        raise ValueError("reply agent must be 'defense'.")
+    if prosecution.agent != "prosecution":
+        raise ValueError("reply requires a prosecution report.")
+    validate_report(prosecution, evidence)
+    seen_targets = set()
+    for item in reply.replies:
+        target = item.prosecution_finding
+        # bool is a subclass of int in Python; True must not mean conclusion 1.
+        if type(target) is not int or not 1 <= target <= len(prosecution.findings):
+            raise ValueError("reply targets an unknown prosecution finding.")
+        if target in seen_targets:
+            raise ValueError("combine replies to the same prosecution finding.")
+        seen_targets.add(target)
+        if item.position not in ("agree", "qualify", "disagree"):
+            raise ValueError("reply position must be agree, qualify or disagree.")
+
+    # Reuse the existing checks for non-empty claims and original evidence IDs.
+    # A prosecution conclusion number is never accepted as a new evidence fact.
+    validate_report(
+        AgentReport("defense", [Finding(item.claim, item.evidence_ids) for item in reply.replies]),
+        evidence,
+    )
+
+
 def validate_report(report: AgentReport, evidence: Sequence[Evidence]) -> None:
     """Raise ValueError if a report is incomplete or cites unknown evidence."""
     if report.agent not in ("prosecution", "defense"):

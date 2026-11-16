@@ -1,6 +1,6 @@
 {
   "synthetic": true,
-  "status": "Prepared for discussion only. Not executed or tested.",
+  "status": "Offline rejection verified on 2026-11-15. This case is intentionally not sent to the API.",
   "title": "A review request with no evidence at all",
   "rationale": "Case 03 still supplies a timestamp, model score and alert flag. This case supplies none of those. It is a case about rejecting an unsupported request, not asking the LLM to invent a report.",
   "reading_guide": [
@@ -8,7 +8,7 @@
     "Empty alert, transactions and model_output mean no factual record was supplied.",
     "Do not add an alert flag or score to make the request run: that would no longer be an empty-evidence case."
   ],
-  "integration_note": "This draft is not registered in CASE_NAMES or the experiment runner. Review it as a future offline rejection scenario. The current role entry points require an explicit true model alert, which this input does not contain. These expectations come from reading the code, not from executing this case.",
+  "integration_note": "Not registered in the live runner. test_orchestrator.py loads this fixture and checks both role guards and orchestrator rejection using a fake text generator. No report or API call is expected.",
   "input": {
     "alert_id": "synthetic-empty-evidence",
     "alert": {},
@@ -39,7 +39,7 @@
       "This is an input-validation scenario, not a live model-quality evaluation.",
       "The current AgentReport contract requires at least one finding and a supplied reference; an empty packet cannot support that report.",
       "No new insufficient-data status or contract change has been implemented.",
-      "Expected rejection behaviour still needs an offline test in a later session. No tests were run when preparing this file."
+      "The two offline checks verify rejection and zero text-generator calls; they do not measure live model behaviour."
     ]
   }
 }

@@ -1,10 +1,11 @@
-"""Run independent prosecution and defense reviews for one case."""
+"""Run independent reviews, optionally followed by one defense reply."""
 
 from dataclasses import dataclass
 
 from agents.case_context import CaseContext
-from agents.contracts import AgentReport, validate_report
+from agents.contracts import AgentReport, DefenseReply, validate_report, validate_reply
 from agents.defense import create_report as create_defense_report
+from agents.defense import create_reply as create_defense_reply
 from agents.llm import TextGenerator
 from agents.prosecution import create_report as create_prosecution_report
 
@@ -31,6 +32,31 @@ def review_case(
     # Check both reports again at the point where they are combined.
     validate_report(prosecution, evidence)
     validate_report(defense, evidence)
-    # Despite its name, DebateResult only holds the two independent reports.
-    # No back-and-forth discussion takes place here yet.
+    # Keep this existing entry point independent. The optional debate has its
+    # own function below, so old scripts do not silently spend another API call.
     return DebateResult(prosecution=prosecution, defense=defense)
+
+
+@dataclass(frozen=True)
+class SingleRoundDebateResult:
+    """Keep both original reports and the later reply as separate outputs."""
+
+    prosecution: AgentReport
+    defense: AgentReport
+    defense_reply: DefenseReply
+
+
+def run_debate(
+    context: CaseContext, *, text_generator: TextGenerator | None = None
+) -> SingleRoundDebateResult:
+    """Create independent reports, then ask defense to respond exactly once."""
+    # review_case completes and validates BOTH reports before the reply begins.
+    # The original defense report therefore cannot read prosecution's arguments.
+    initial = review_case(context, text_generator=text_generator)
+    reply = create_defense_reply(
+        context, initial.prosecution, initial.defense, text_generator=text_generator
+    )
+    validate_reply(reply, initial.prosecution, context.evidence)
+    # There is no loop, judge or second rebuttal. If any stage fails, its error
+    # reaches the caller; an incomplete debate is not returned as a success.
+    return SingleRoundDebateResult(initial.prosecution, initial.defense, reply)

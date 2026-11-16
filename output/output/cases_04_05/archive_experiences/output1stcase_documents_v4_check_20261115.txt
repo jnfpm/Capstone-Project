@@ -1,0 +1,300 @@
+Case: 01_concentrated_transfers
+Version: documents_v4_check_20261115
+Provider: anthropic
+Configured model: claude-opus-5-5
+Response budget per call: 8192
+Workflow: draft + one revision per role
+Code commit: f12451c77f9dda6c20ab44b5810c8aee547fc045
+Started (UTC): 2026-11-15T19:24:26.893668+00:00
+
+SHA256 agents/prompts.py: 5a4e96fbcf5aff45dc4901efa761a758c9c552f97000fc0c71912d67896589b6
+SHA256 agents/llm.py: 86ef33b2c320e969f0e3641afe5e6afa386ff9ce22f994f4d6f7270bb123f3f8
+SHA256 agents/case_context.py: 572dc5fd3d0e0403b4c91208a0422b09450ccc69452346f5435ad14bc0e65d40
+SHA256 agents/reference_cases/01_concentrated_transfers.json: 0c88bfb29b401e74c850db408f01cb1958f85314ed2ce04953753336036222e8
+
+SUPPLIED EVIDENCE
+[
+  {
+    "id": "alert-synthetic-concentrated-e7ac94f0-timestamp",
+    "source": "case_record",
+    "reference": "alert synthetic-concentrated",
+    "description": "Timestamp: 2022-09-08 10:15:00"
+  },
+  {
+    "id": "alert-synthetic-concentrated-e7ac94f0-acct-from",
+    "source": "case_record",
+    "reference": "alert synthetic-concentrated",
+    "description": "acct_from: bank-A:central"
+  },
+  {
+    "id": "alert-synthetic-concentrated-e7ac94f0-acct-to",
+    "source": "case_record",
+    "reference": "alert synthetic-concentrated",
+    "description": "acct_to: bank-B:destination"
+  },
+  {
+    "id": "alert-synthetic-concentrated-e7ac94f0-amount-usd",
+    "source": "case_record",
+    "reference": "alert synthetic-concentrated",
+    "description": "amount_usd: 14900"
+  },
+  {
+    "id": "alert-synthetic-concentrated-e7ac94f0-payment-format",
+    "source": "case_record",
+    "reference": "alert synthetic-concentrated",
+    "description": "Payment Format: ACH"
+  },
+  {
+    "id": "transaction-in-1-16e990e6-timestamp",
+    "source": "transaction",
+    "reference": "transaction in-1-16e990e6",
+    "description": "Timestamp: 2022-09-08 10:00:00"
+  },
+  {
+    "id": "transaction-in-1-16e990e6-amount-paid",
+    "source": "transaction",
+    "reference": "transaction in-1-16e990e6",
+    "description": "Amount Paid: 5000"
+  },
+  {
+    "id": "transaction-in-1-16e990e6-payment-format",
+    "source": "transaction",
+    "reference": "transaction in-1-16e990e6",
+    "description": "Payment Format: ACH"
+  },
+  {
+    "id": "transaction-in-1-16e990e6-payment-currency",
+    "source": "transaction",
+    "reference": "transaction in-1-16e990e6",
+    "description": "Payment Currency: USD"
+  },
+  {
+    "id": "transaction-in-1-16e990e6-amount-usd",
+    "source": "transaction",
+    "reference": "transaction in-1-16e990e6",
+    "description": "amount_usd: 5000"
+  },
+  {
+    "id": "transaction-in-1-16e990e6-acct-from",
+    "source": "transaction",
+    "reference": "transaction in-1-16e990e6",
+    "description": "acct_from: bank-A:source-1"
+  },
+  {
+    "id": "transaction-in-1-16e990e6-acct-to",
+    "source": "transaction",
+    "reference": "transaction in-1-16e990e6",
+    "description": "acct_to: bank-A:central"
+  },
+  {
+    "id": "transaction-in-1-16e990e6-country-from",
+    "source": "transaction",
+    "reference": "transaction in-1-16e990e6",
+    "description": "country_from: PT"
+  },
+  {
+    "id": "transaction-in-1-16e990e6-country-to",
+    "source": "transaction",
+    "reference": "transaction in-1-16e990e6",
+    "description": "country_to: PT"
+  },
+  {
+    "id": "transaction-in-2-e2dbb589-timestamp",
+    "source": "transaction",
+    "reference": "transaction in-2-e2dbb589",
+    "description": "Timestamp: 2022-09-08 10:05:00"
+  },
+  {
+    "id": "transaction-in-2-e2dbb589-amount-paid",
+    "source": "transaction",
+    "reference": "transaction in-2-e2dbb589",
+    "description": "Amount Paid: 5000"
+  },
+  {
+    "id": "transaction-in-2-e2dbb589-payment-format",
+    "source": "transaction",
+    "reference": "transaction in-2-e2dbb589",
+    "description": "Payment Format: ACH"
+  },
+  {
+    "id": "transaction-in-2-e2dbb589-payment-currency",
+    "source": "transaction",
+    "reference": "transaction in-2-e2dbb589",
+    "description": "Payment Currency: USD"
+  },
+  {
+    "id": "transaction-in-2-e2dbb589-amount-usd",
+    "source": "transaction",
+    "reference": "transaction in-2-e2dbb589",
+    "description": "amount_usd: 5000"
+  },
+  {
+    "id": "transaction-in-2-e2dbb589-acct-from",
+    "source": "transaction",
+    "reference": "transaction in-2-e2dbb589",
+    "description": "acct_from: bank-A:source-2"
+  },
+  {
+    "id": "transaction-in-2-e2dbb589-acct-to",
+    "source": "transaction",
+    "reference": "transaction in-2-e2dbb589",
+    "description": "acct_to: bank-A:central"
+  },
+  {
+    "id": "transaction-in-2-e2dbb589-country-from",
+    "source": "transaction",
+    "reference": "transaction in-2-e2dbb589",
+    "description": "country_from: PT"
+  },
+  {
+    "id": "transaction-in-2-e2dbb589-country-to",
+    "source": "transaction",
+    "reference": "transaction in-2-e2dbb589",
+    "description": "country_to: PT"
+  },
+  {
+    "id": "transaction-in-3-0b698730-timestamp",
+    "source": "transaction",
+    "reference": "transaction in-3-0b698730",
+    "description": "Timestamp: 2022-09-08 10:10:00"
+  },
+  {
+    "id": "transaction-in-3-0b698730-amount-paid",
+    "source": "transaction",
+    "reference": "transaction in-3-0b698730",
+    "description": "Amount Paid: 5000"
+  },
+  {
+    "id": "transaction-in-3-0b698730-payment-format",
+    "source": "transaction",
+    "reference": "transaction in-3-0b698730",
+    "description": "Payment Format: ACH"
+  },
+  {
+    "id": "transaction-in-3-0b698730-payment-currency",
+    "source": "transaction",
+    "reference": "transaction in-3-0b698730",
+    "description": "Payment Currency: USD"
+  },
+  {
+    "id": "transaction-in-3-0b698730-amount-usd",
+    "source": "transaction",
+    "reference": "transaction in-3-0b698730",
+    "description": "amount_usd: 5000"
+  },
+  {
+    "id": "transaction-in-3-0b698730-acct-from",
+    "source": "transaction",
+    "reference": "transaction in-3-0b698730",
+    "description": "acct_from: bank-A:source-3"
+  },
+  {
+    "id": "transaction-in-3-0b698730-acct-to",
+    "source": "transaction",
+    "reference": "transaction in-3-0b698730",
+    "description": "acct_to: bank-A:central"
+  },
+  {
+    "id": "transaction-in-3-0b698730-country-from",
+    "source": "transaction",
+    "reference": "transaction in-3-0b698730",
+    "description": "country_from: PT"
+  },
+  {
+    "id": "transaction-in-3-0b698730-country-to",
+    "source": "transaction",
+    "reference": "transaction in-3-0b698730",
+    "description": "country_to: PT"
+  },
+  {
+    "id": "transaction-out-1-f44c30d0-timestamp",
+    "source": "transaction",
+    "reference": "transaction out-1-f44c30d0",
+    "description": "Timestamp: 2022-09-08 10:15:00"
+  },
+  {
+    "id": "transaction-out-1-f44c30d0-amount-paid",
+    "source": "transaction",
+    "reference": "transaction out-1-f44c30d0",
+    "description": "Amount Paid: 14900"
+  },
+  {
+    "id": "transaction-out-1-f44c30d0-payment-format",
+    "source": "transaction",
+    "reference": "transaction out-1-f44c30d0",
+    "description": "Payment Format: ACH"
+  },
+  {
+    "id": "transaction-out-1-f44c30d0-payment-currency",
+    "source": "transaction",
+    "reference": "transaction out-1-f44c30d0",
+    "description": "Payment Currency: USD"
+  },
+  {
+    "id": "transaction-out-1-f44c30d0-amount-usd",
+    "source": "transaction",
+    "reference": "transaction out-1-f44c30d0",
+    "description": "amount_usd: 14900"
+  },
+  {
+    "id": "transaction-out-1-f44c30d0-acct-from",
+    "source": "transaction",
+    "reference": "transaction out-1-f44c30d0",
+    "description": "acct_from: bank-A:central"
+  },
+  {
+    "id": "transaction-out-1-f44c30d0-acct-to",
+    "source": "transaction",
+    "reference": "transaction out-1-f44c30d0",
+    "description": "acct_to: bank-B:destination"
+  },
+  {
+    "id": "transaction-out-1-f44c30d0-country-from",
+    "source": "transaction",
+    "reference": "transaction out-1-f44c30d0",
+    "description": "country_from: PT"
+  },
+  {
+    "id": "transaction-out-1-f44c30d0-country-to",
+    "source": "transaction",
+    "reference": "transaction out-1-f44c30d0",
+    "description": "country_to: PT"
+  },
+  {
+    "id": "model-synthetic-concentrated-e7ac94f0-score",
+    "source": "model_output",
+    "reference": "scoring model output for alert synthetic-concentrated",
+    "description": "Model output score: 0.91"
+  },
+  {
+    "id": "model-synthetic-concentrated-e7ac94f0-alert",
+    "source": "model_output",
+    "reference": "scoring model output for alert synthetic-concentrated",
+    "description": "Model output alert: True"
+  },
+  {
+    "id": "model-synthetic-concentrated-e7ac94f0-reason-1",
+    "source": "model_output",
+    "reference": "scoring model explanation for alert synthetic-concentrated",
+    "description": "Model output reason: snd_recv_24h=3"
+  }
+]
+
+FINAL REPORTS (not automatically graded)
+
+PROSECUTION - CONCLUSION 1
+On 2022-09-08, three accounts (bank-A:source-1, bank-A:source-2 and bank-A:source-3) each sent 5,000 USD to the same account, bank-A:central, at 10:00, 10:05 and 10:10. Together these transfers total 15,000 USD. At 10:15, bank-A:central sent 14,900 USD to bank-B:destination. That was 5 minutes after the last incoming transfer and 15 minutes after the first. The outgoing amount is 100 USD less than the combined incoming amount.
+Evidence: transaction-in-1-16e990e6-timestamp, transaction-in-1-16e990e6-amount-usd, transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-2-e2dbb589-amount-usd, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-timestamp, transaction-in-3-0b698730-amount-usd, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to
+
+PROSECUTION - CONCLUSION 2
+One possibility is that bank-A:central gathered funds from several sources and promptly moved a similar amount onward to bank-B:destination, which would justify checking the purpose of these flows. However, the packet does not show that the incoming funds financed the outgoing transfer, does not show any account balance, and does not establish misconduct. The scoring model flagged the alert with a score of 0.91 and listed the reason feature snd_recv_24h=3; a model signal is not proof or a verified probability of wrongdoing, and the feature's definition and the model's full rationale were not supplied. No ownership or customer profile information and no complete account history were supplied. To assess this pattern, reviewers would need account ownership and relationships between the parties, the stated purpose of each transfer, account balances and broader activity history, and the model's feature definitions and explanation.
+Evidence: transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd, transaction-out-1-f44c30d0-amount-usd, transaction-in-1-16e990e6-timestamp, transaction-in-2-e2dbb589-timestamp, transaction-in-3-0b698730-timestamp, transaction-out-1-f44c30d0-timestamp, model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1
+
+DEFENSE - CONCLUSION 1
+Three incoming transfers of USD 5,000 each were credited to bank-A:central. They came from bank-A:source-1 at 2022-09-08 10:00:00, bank-A:source-2 at 10:05:00 and bank-A:source-3 at 10:10:00, totalling USD 15,000. At 10:15:00 the same day, bank-A:central sent USD 14,900 to bank-B:destination. This outgoing transfer is the one the alert record identifies. It occurred 15 minutes after the first incoming credit and 5 minutes after the last, and is USD 100 less than the combined incoming amount. That difference between the selected flows is not a retained balance and does not show which funds financed the outgoing payment.
+Evidence: transaction-in-1-16e990e6-amount-usd, transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-1-16e990e6-timestamp, transaction-in-2-e2dbb589-amount-usd, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-3-0b698730-amount-usd, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-acct-to, transaction-in-3-0b698730-timestamp, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-out-1-f44c30d0-timestamp, alert-synthetic-concentrated-e7ac94f0-timestamp, alert-synthetic-concentrated-e7ac94f0-acct-from, alert-synthetic-concentrated-e7ac94f0-acct-to, alert-synthetic-concentrated-e7ac94f0-amount-usd
+
+DEFENSE - CONCLUSION 2
+The close timing and similar amounts justify checking the purpose of these flows, but the packet does not establish wrongdoing. One cautious alternative hypothesis is that bank-A:central routinely collects funds from multiple counterparties before making a single consolidated payment as part of its ordinary account activity. No documents stating a purpose were supplied, so this hypothesis cannot be confirmed or excluded. The model produced an alert with a score of 0.91 and listed a reason feature; the score is a model signal, not proof or a verified probability of illicit activity, and the feature's definition was not supplied and is not interpreted here. The packet contains only these selected transactions and account identifiers; no complete account history and no ownership or customer-profile information were supplied. To assess the hypothesis, reviewers need: the ownership of, and relationships between, the source, central and destination accounts; the expected activity profile of the central account; its broader transaction history; documentation of the purpose of the incoming and outgoing payments; and the model's full explanation and feature definitions.
+Evidence: transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-in-1-16e990e6-timestamp, transaction-in-2-e2dbb589-timestamp, transaction-in-3-0b698730-timestamp, transaction-out-1-f44c30d0-timestamp, transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd, transaction-out-1-f44c30d0-amount-usd, model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1
+

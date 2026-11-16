@@ -1,6 +1,6 @@
 {
   "synthetic": true,
-  "status": "Prepared for discussion only. Not executed or tested.",
+  "status": "Document evidence is integrated. Live development experiments started on 2026-11-15; see output/output/cases_04_05/final_report.txt for results and limitations.",
   "title": "A payment supported by a fictional agreement and invoice",
   "rationale": "Unlike the regular-payments case, this case supplies documents describing a payment purpose. Check whether agents use that evidence without treating the documents as proof that all activity is legitimate.",
   "reading_guide": [
@@ -8,7 +8,7 @@
     "Then read additional_evidence: these are fictional document excerpts, not evaluation instructions or real attachments.",
     "Finally read evaluation: these are expectations for the reviewer and must never be sent to the model as evidence."
   ],
-  "integration_note": "This draft is not registered in CASE_NAMES or the experiment runner. The current build_case_context accepts transaction and model fields but does not load these additional document records. Before executing this case, explicitly connect additional_evidence to CaseContext without passing evaluation or reading notes. No loader change is included in this task.",
+  "integration_note": "Registered in CASE_NAMES. build_reference_context passes additional_evidence to build_case_context. The live runner selects this case with --cases 04_documented_payment. Evaluation and reading notes are not model evidence.",
   "input": {
     "alert_id": "synthetic-documented-payment",
     "alert": {
@@ -72,7 +72,7 @@
       "All accounts, documents and model values are fictional.",
       "The excerpts document a stated purpose; authenticity and service delivery have not been checked.",
       "Complete account history, independent ownership checks and model reasons are unavailable.",
-      "This case has not been executed. Its document-to-context integration remains to be implemented and checked after reviewing the new preprocessing interface."
+      "This synthetic development case does not validate the real preprocessing pipeline or independently establish model quality."
     ]
   }
 }

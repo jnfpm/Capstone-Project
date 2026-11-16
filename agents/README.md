@@ -1,5 +1,18 @@
 # Independent agent reviews
 
+## Optional single-round debate (implemented, not executed)
+
+`orchestrator.run_debate(context)` first creates both independent reports,
+then requests one defense reply to numbered prosecution findings. It returns
+`prosecution`, `defense` and `defense_reply` separately. The successful path
+uses five application-level model calls: two per initial report and one reply.
+`review_case`, the prepared-data service and the existing experiment runner
+still use independent reviews only. They do not silently start a debate.
+
+See [AGENT_PROJECT_STATUS.pdf](AGENT_PROJECT_STATUS.pdf) for the updated project
+status, Mariana's agent work and remaining tasks. This implementation has not been executed or tested, at Mariana's
+request. Earlier passing tests and report evaluations do not validate it.
+
 ## Simple reading guide
 
 Read the flow as: facts -> first draft -> checks -> one edit -> checks -> final report.

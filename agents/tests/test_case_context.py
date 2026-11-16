@@ -208,7 +208,10 @@ class ReferenceCaseTests(unittest.TestCase):
             for instruction in case["evaluation"][section]:
                 self.assertNotIn(instruction, evidence_text)
         for section in ("rationale", "reading_guide", "integration_note", "status"):
-            self.assertNotIn(case[section], evidence_text)
+            # reading_guide is a list. Check its sentences, not the list object.
+            notes = case[section] if isinstance(case[section], list) else [case[section]]
+            for note in notes:
+                self.assertNotIn(note, evidence_text)
 
     def test_unknown_case_is_rejected(self):
         with self.assertRaises(ValueError):

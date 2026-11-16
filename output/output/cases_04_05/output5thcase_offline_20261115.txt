@@ -1,0 +1,7 @@
+test_case_05_each_role_rejects_empty_evidence_directly (test_orchestrator.ReviewCaseTests.test_case_05_each_role_rejects_empty_evidence_directly) ... ok
+test_case_05_empty_evidence_stops_before_model_and_defense (test_orchestrator.ReviewCaseTests.test_case_05_empty_evidence_stops_before_model_and_defense) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.030s
+
+OK

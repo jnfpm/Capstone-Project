@@ -4,7 +4,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 # Add the repository root when this file is run directly.
 if __package__ in (None, ""):
@@ -13,6 +13,8 @@ if __package__ in (None, ""):
 from agents.case_context import build_case_context
 from agents.contracts import AgentReport, Finding
 from agents.orchestrator import review_case
+from agents.prosecution import create_report as prosecution_review
+from agents.defense import create_report as defense_review
 
 
 class ReviewCaseTests(unittest.TestCase):
@@ -44,6 +46,31 @@ class ReviewCaseTests(unittest.TestCase):
             agent="defense",
             findings=[Finding(claim=fact.description, evidence_ids=[fact.id])],
         )
+
+    def test_case_05_empty_evidence_stops_before_model_and_defense(self):
+        # Load the actual case file, so this check follows the scenario we review.
+        path = Path(__file__).resolve().parents[1] / "reference_cases/05_empty_evidence.json"
+        case = json.loads(path.read_text(encoding="utf-8"))
+        context = build_case_context(**case["input"])
+        self.assertEqual(context.evidence, ())
+        # This fake raises if reached. No API can be called through this path.
+        generator = Mock(side_effect=AssertionError("The model must not be called."))
+        with patch("agents.orchestrator.create_defense_report") as defense:
+            with self.assertRaisesRegex(ValueError, "requires an alert flagged by the model"):
+                review_case(context, text_generator=generator)
+            defense.assert_not_called()
+        generator.assert_not_called()
+
+    def test_case_05_each_role_rejects_empty_evidence_directly(self):
+        # Defense also needs its own guard when called without the orchestrator.
+        path = Path(__file__).resolve().parents[1] / "reference_cases/05_empty_evidence.json"
+        context = build_case_context(**json.loads(path.read_text(encoding="utf-8"))["input"])
+        for create in (prosecution_review, defense_review):
+            with self.subTest(role=create.__module__):
+                generator = Mock(side_effect=AssertionError("The model must not be called."))
+                with self.assertRaisesRegex(ValueError, "requires an alert flagged by the model"):
+                    create(context, text_generator=generator)
+                generator.assert_not_called()
 
     def test_returns_cited_prosecution_and_defense_reports(self):
         # Both reviewers receive the same model and transaction evidence.
