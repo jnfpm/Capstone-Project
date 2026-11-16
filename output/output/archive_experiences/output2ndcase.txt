@@ -1,0 +1,48 @@
+Case: 02_regular_payments
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget: 4096
+Code commit: 9ccb65d927adfe5a82ea732e830f9137b2babc57
+Run started (UTC): 2026-11-11T13:38:25.782322+00:00
+Assessment: see baseline_evaluation.txt
+
+PROSECUTION - CONCLUSION 1
+Three supplied ACH transactions each show 1200 USD moving from the same bank-A:customer account to the same bank-B:beneficiary account at 09:00:00 on 2022-07-08, 2022-08-08 and 2022-09-08, which is a recurring monthly pattern that may warrant review of the relationship and purpose of the payments.
+Evidence: transaction-regular-1-bbaeff66-timestamp, transaction-regular-1-bbaeff66-amount-usd, transaction-regular-1-bbaeff66-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-timestamp, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-2-bc7eded6-acct-from, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-timestamp, transaction-regular-3-2a92190e-amount-usd, transaction-regular-3-2a92190e-acct-from, transaction-regular-3-2a92190e-acct-to
+
+PROSECUTION - CONCLUSION 2
+The alert's recorded timestamp, amount and payment format match the third supplied transaction (2022-09-08, 1200 USD, ACH), so the alert appears to be tied to that specific payment rather than to a separate event.
+Evidence: alert-synthetic-regular-42a409dc-timestamp, alert-synthetic-regular-42a409dc-amount-usd, alert-synthetic-regular-42a409dc-payment-format, transaction-regular-3-2a92190e-timestamp, transaction-regular-3-2a92190e-amount-usd, transaction-regular-3-2a92190e-payment-format
+
+PROSECUTION - CONCLUSION 3
+The scoring model flagged the alert with an output score of 0.78; this is a review signal that prioritises the case for analyst attention and is not proof of wrongdoing or a verified probability of crime.
+Evidence: model-synthetic-regular-42a409dc-score, model-synthetic-regular-42a409dc-alert
+
+PROSECUTION - CONCLUSION 4
+All supplied transactions show the originating and receiving countries as PT, so the supplied rows contain no cross-border indicator, which weakens but does not rule out concern about the pattern.
+Evidence: transaction-regular-1-bbaeff66-country-from, transaction-regular-1-bbaeff66-country-to, transaction-regular-2-bc7eded6-country-from, transaction-regular-2-bc7eded6-country-to, transaction-regular-3-2a92190e-country-from, transaction-regular-3-2a92190e-country-to
+
+PROSECUTION - CONCLUSION 5
+The supplied evidence is limited to three transactions and one alert, with no stated payment purpose, customer profile, beneficiary information or wider account history; a regular fixed-amount payment could be legitimate, so the pattern cannot be confirmed as suspicious without that information.
+Evidence: alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to, model-synthetic-regular-42a409dc-alert
+
+DEFENSE - CONCLUSION 1
+The model output flags alert synthetic-regular with a score of 0.78 and alert set to True. This is a review signal, not proof of wrongdoing or a verified probability of crime, and the supplied evidence does not explain which features drove the score.
+Evidence: model-synthetic-regular-42a409dc-score, model-synthetic-regular-42a409dc-alert
+
+DEFENSE - CONCLUSION 2
+The alerted activity matches the transaction record on the same date and amount: a 1200 USD ACH payment from bank-A:customer to bank-B:beneficiary on 2022-09-08 09:00:00. The alert is therefore tied to a single identifiable transaction.
+Evidence: alert-synthetic-regular-42a409dc-timestamp, alert-synthetic-regular-42a409dc-amount-usd, alert-synthetic-regular-42a409dc-payment-format, alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to, transaction-regular-3-2a92190e-timestamp, transaction-regular-3-2a92190e-amount-paid, transaction-regular-3-2a92190e-acct-from, transaction-regular-3-2a92190e-acct-to
+
+DEFENSE - CONCLUSION 3
+The three supplied transactions share the same amount (1200), payment format (ACH), currency (USD), sender and beneficiary accounts, and country pair (PT to PT), and fall on the 8th of July, August and September 2022 at 09:00:00. This regular pattern is consistent with a recurring scheduled payment, such as rent or a subscription, but that hypothesis needs verification against the customer's stated purpose and payment agreements.
+Evidence: transaction-regular-1-bbaeff66-timestamp, transaction-regular-2-bc7eded6-timestamp, transaction-regular-3-2a92190e-timestamp, transaction-regular-1-bbaeff66-amount-paid, transaction-regular-2-bc7eded6-amount-paid, transaction-regular-3-2a92190e-amount-paid, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-acct-to
+
+DEFENSE - CONCLUSION 4
+All supplied transactions are domestic in the sense that both the origin and destination countries are PT, and no cross-border indicator appears in the supplied rows. This weighs against a cross-border risk profile, though the supplied fields do not establish the beneficiary's true location or ownership.
+Evidence: transaction-regular-1-bbaeff66-country-from, transaction-regular-1-bbaeff66-country-to, transaction-regular-2-bc7eded6-country-from, transaction-regular-2-bc7eded6-country-to, transaction-regular-3-2a92190e-country-from, transaction-regular-3-2a92190e-country-to
+
+DEFENSE - CONCLUSION 5
+The review is limited: only three transactions, one alert, and one model output were supplied. There is no customer profile, expected activity baseline, beneficiary information, payment purpose, or account history beyond these rows, so it cannot be determined whether these rows represent complete account activity or whether the pattern is typical for this customer.
+Evidence: alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to, transaction-regular-1-bbaeff66-acct-from, transaction-regular-2-bc7eded6-acct-from, transaction-regular-3-2a92190e-acct-from, model-synthetic-regular-42a409dc-alert
+

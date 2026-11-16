@@ -1,0 +1,29 @@
+Case: 02_regular_payments
+Version: v6
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget per call: 8192
+Workflow: draft + one revision per role
+Code commit: a742d78fd1b008d464a61b522211fb4d8be9c81c
+Started (UTC): 2026-11-11T14:08:04.092859+00:00
+
+PROSECUTION - CONCLUSION 1
+Three transactions each show USD 1200 from bank-A:customer to bank-B:beneficiary, with timestamps 2022-07-08 09:00:00, 2022-08-08 09:00:00 and 2022-09-08 09:00:00. The three amounts total USD 3600. The elapsed time is 31 days from the first transfer to the second and 31 days from the second to the third, a 62-day span. This recurring same-amount, same-endpoint pattern may justify checking the purpose of the transfers.
+Evidence: transaction-regular-1-bbaeff66-amount-usd, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-3-2a92190e-amount-usd, transaction-regular-1-bbaeff66-acct-from, transaction-regular-2-bc7eded6-acct-from, transaction-regular-3-2a92190e-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-acct-to, transaction-regular-1-bbaeff66-timestamp, transaction-regular-2-bc7eded6-timestamp, transaction-regular-3-2a92190e-timestamp
+
+PROSECUTION - CONCLUSION 2
+The case alert records a USD 1200 transfer from bank-A:customer to bank-B:beneficiary at 2022-09-08 09:00:00. This matches the amount, endpoints and timestamp of the third transaction.
+Evidence: alert-synthetic-regular-42a409dc-amount-usd, alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to, alert-synthetic-regular-42a409dc-timestamp, transaction-regular-3-2a92190e-amount-usd, transaction-regular-3-2a92190e-acct-from, transaction-regular-3-2a92190e-acct-to, transaction-regular-3-2a92190e-timestamp
+
+PROSECUTION - CONCLUSION 3
+The recurring equal transfers between the same accounts may warrant review of their purpose, but they do not establish wrongdoing. The scoring model output (score 0.78, alert True) is a signal to review, not proof of crime. The packet contains no broader account history, ownership or profile information beyond these three transactions and the alert record. Investigators should obtain the stated purpose of the transfers, the beneficiary relationship, and the account history and profile needed to assess whether the pattern is ordinary.
+Evidence: model-synthetic-regular-42a409dc-score, model-synthetic-regular-42a409dc-alert, transaction-regular-1-bbaeff66-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-acct-from, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-acct-from, transaction-regular-3-2a92190e-acct-to, transaction-regular-1-bbaeff66-amount-usd, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-3-2a92190e-amount-usd, transaction-regular-1-bbaeff66-timestamp, transaction-regular-2-bc7eded6-timestamp, transaction-regular-3-2a92190e-timestamp
+
+DEFENSE - CONCLUSION 1
+The supplied packet shows three USD transfers of 1200 each from bank-A:customer to bank-B:beneficiary, totaling 3600 USD. The transactions are dated 2022-07-08 09:00:00, 2022-08-08 09:00:00 and 2022-09-08 09:00:00, an elapsed time of 31 days between the first and second and 31 days between the second and third.
+Evidence: transaction-regular-1-bbaeff66-amount-usd, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-3-2a92190e-amount-usd, transaction-regular-1-bbaeff66-acct-from, transaction-regular-2-bc7eded6-acct-from, transaction-regular-3-2a92190e-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-acct-to, transaction-regular-1-bbaeff66-timestamp, transaction-regular-2-bc7eded6-timestamp, transaction-regular-3-2a92190e-timestamp
+
+DEFENSE - CONCLUSION 2
+Possible interpretation: the recurring equal-amount transfers about 31 days apart to the same beneficiary account could reflect a planned recurring payment, such as an installment or standing obligation. The packet does not show the purpose of the payments, any agreement or invoice, the beneficiary's ownership or relationship to the customer, or account activity outside these transactions, so this cannot be confirmed or excluded. The alert record (timestamp 2022-09-08 09:00:00, same accounts, amount_usd 1200) describes the same event as the third transaction and is not independent corroboration. The model output (score 0.78, alert True) is a model signal only and does not establish the purpose of the transfers or criminal activity. Missing information to test this interpretation: payment purpose or contract records, beneficiary ownership and profile details, and the customer's account history beyond the supplied transactions.
+Evidence: transaction-regular-1-bbaeff66-amount-usd, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-3-2a92190e-amount-usd, transaction-regular-1-bbaeff66-acct-from, transaction-regular-2-bc7eded6-acct-from, transaction-regular-3-2a92190e-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-acct-to, transaction-regular-1-bbaeff66-timestamp, transaction-regular-2-bc7eded6-timestamp, transaction-regular-3-2a92190e-timestamp, alert-synthetic-regular-42a409dc-timestamp, alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to, alert-synthetic-regular-42a409dc-amount-usd, model-synthetic-regular-42a409dc-score, model-synthetic-regular-42a409dc-alert
+

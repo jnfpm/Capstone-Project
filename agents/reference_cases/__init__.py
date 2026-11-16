@@ -9,11 +9,12 @@ CASE_NAMES = (
     "01_concentrated_transfers",
     "02_regular_payments",
     "03_insufficient_information",
+    "04_documented_payment",
 )
 
 
 def load_reference_case(name: str) -> dict:
-    """Read the input data and evaluation criteria for one of the three cases."""
+    """Read the input data and evaluation criteria for a reference case."""
     if name not in CASE_NAMES:
         raise ValueError(f"Unknown reference case: {name!r}")
     path = Path(__file__).with_name(f"{name}.json")
@@ -21,13 +22,15 @@ def load_reference_case(name: str) -> dict:
 
 
 def build_reference_context(name: str) -> CaseContext:
-    """Pass only facts and simulated model outputs to the existing builder."""
+    """Pass evidence facts and simulated model outputs, never evaluation notes."""
     # Criteria belong to the evaluator. Sending them to the LLM would reveal
     # expected answers and undermine independent evaluation of the reports.
-    data = load_reference_case(name)["input"]
+    case = load_reference_case(name)
+    data = case["input"]
     return build_case_context(
         alert_id=data["alert_id"],
         alert=data["alert"],
         transactions=data["transactions"],
         model_output=data["model_output"],
+        additional_evidence=case.get("additional_evidence", ()),
     )

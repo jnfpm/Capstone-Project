@@ -1,0 +1,181 @@
+CLEAR - A SIMPLE GUIDE TO OUR REPORT EXPERIMENTS
+Experiments: 11 November 2026
+
+THE RESULT
+We improved the reports on our three fictional cases. The two final Opus runs
+met the criteria in the coding assistant's assessment. This is a development
+starting point, not proof that the agents work reliably on new cases.
+
+1. WHAT WERE WE TRYING TO FIX?
+
+Two problems:
+- Some sentences made several claims but cited only part of the evidence.
+- Several conclusions repeated the same limitation or information request.
+
+Example: "The payments have equal amounts and happen monthly."
+This needs BOTH amount references and date references. Citing amounts alone
+does not support the word monthly.
+
+We also wanted defense to keep useful alternative explanations, clearly labelled
+as possibilities. A shorter answer is not better if it loses useful reasoning.
+
+2. WHICH DATA DID WE USE?
+
+Case 1: three incoming payments of 5,000 USD, followed by an outgoing payment
+of 14,900 USD from the same central account. We checked the amounts, account
+links and five-minute gap after the last incoming payment. The 100 USD
+difference does not establish a remaining balance or prove which funds were used.
+
+Case 2: three monthly payments of 1,200 USD between the same accounts.
+We checked whether agents recognise regularity without calling it proof of
+wrongdoing or legitimacy. The purpose of the payments remains unknown.
+
+Case 3: only an alert timestamp, score and flag. No transaction records.
+We checked whether agents acknowledge missing information and ask for amounts,
+currencies, accounts, timestamps and history instead of inventing a story.
+
+The SAME three cases were reused. Their inputs and evaluation criteria stayed
+unchanged. Expected answers were not sent to the model.
+
+3. WHAT HAPPENED IN EACH EXPERIMENT?
+
+Choose instructions and settings -> generate reports -> save new TXT files ->
+read the reports against the evidence -> decide what needs improvement.
+
+Each case has a prosecution report and a defense report in ONE TXT file.
+Three cases therefore produce three TXT files, containing up to six reports.
+13 result sets x 3 cases = 39 TXT files. These are NOT 39 different cases.
+Failures are recorded too; a file existing does not mean the report passed.
+
+The runner only generates and saves reports. The coding assistant assessed
+their content afterwards. The assessments are not independent human reviews.
+
+4. WHAT CHANGED IN EACH SET?
+
+Original outputs: establish a starting point. There were missing references,
+unsupported interpretations and repeated conclusions. 33 conclusions in total.
+
+v2: clearer reference and repetition instructions. Reports became shorter,
+but citation gaps remained and an unsupported payment-routing risk claim appeared.
+
+v3: focus on important facts and avoid guessing model-feature meanings.
+Some account/currency references and repeated limitations remained.
+
+v4: separate observations from the final assessment. Structure improved,
+but some details and relationships still lacked supporting references.
+
+v5: introduce one editing call after each draft. Case 1 defense hit the response
+size limit; case 2 prosecution returned invalid JSON (the required text format).
+These failures were marked NOT GRADED. Citation issues also remained.
+
+v6 (Haiku): request a defined JSON format, increase the response allowance,
+and give editing its own instructions. All six reports completed, but defense
+said ACH-free transfers even though the supplied format was ACH. Not accepted.
+
+v6_sonnet: same v6 code and instructions, different model. Reference coverage
+improved, but an unnecessary alert-match conclusion still repeated information.
+
+v7_sonnet: merge repeated alert matches. One prosecution conclusion had no
+references and was rejected. Another report incorrectly said no history was
+supplied, despite having selected transaction records.
+
+v8_sonnet: require non-empty references in the API format and clarify that
+COMPLETE history is missing. One defense assessment still described a sequence
+without citing its timestamps. Not accepted.
+
+v9_sonnet: require date references for words such as later and monthly.
+One assessment still cited only model output for a transaction pattern. Defense
+also lost a useful alternative explanation; a request omitted currency.
+
+v10_sonnet: preserve defense alternatives, support interpretations with
+transaction references, and keep complete missing-data requests. Better, but
+some timing support and alert-trigger wording remained imprecise.
+
+v10_opus: SAME final code and instructions as v10_sonnet, using Opus instead.
+All six reports met the criteria in the assistant's assessment.
+
+v10_opus_check: repeat the same model, instructions and inputs without changes.
+All six reports again met the criteria. We stopped adjusting these cases here.
+
+5. WHAT DOES THE CURRENT PROCESS DO?
+
+For each role:
+Evidence -> draft -> code checks -> one editing call -> code checks -> report.
+
+The editor sees its own role's draft and the original evidence. Defense never
+sees prosecution's report. This is editing, not debate. The code rejects invalid
+results instead of silently returning an unchecked draft. Editing can still err.
+
+Final configuration: Anthropic, claude-opus-5-5, maximum 8192 response tokens
+per call. A token is a small piece of text; the limit is not a target length.
+Two calls per report, four per case, twelve per successful three-case run.
+Earlier versions did not all have editing. Total billed cost was not measured.
+The local .env selects the model. API keys remain private.
+
+6. WHAT DID WE VERIFY?
+
+OFFLINE TESTS: 22 tests passed after the functional changes. They use fake answers
+to check Python behaviour, such as rejecting invented references. They do not
+use the API and did not create the 39 output files.
+
+LIVE REPORTS: real API responses were assessed for factual support, correct
+calculations, qualified hypotheses, useful requests and unnecessary repetition.
+Existing reference IDs alone do not prove that a sentence is supported.
+
+Final case 1: correctly related amounts, accounts and times; defense retained
+possible consolidation explanations and requests to verify them.
+Final case 2: identified regular payments without inventing a confirmed purpose
+or treating regularity as proof of misconduct or legitimacy.
+Final case 3: one useful conclusion per role, explicitly requesting the missing
+amounts, currencies, accounts, timestamps and history.
+
+The first final set had 10 conclusions; the repeat had 11, versus 33 originally.
+Each final set contained six reports. The assistant found no material unsupported
+claim or redundant standalone point in these two sets. Counts alone are not a
+quality score. References may correctly repeat in different conclusions.
+
+7. WHAT HAVE WE NOT PROVED?
+
+We reused three examples while improving the instructions. Results may therefore
+be especially good on these examples. We still need unseen cases and human review.
+Repeating the cases checks consistency; it is not an independent new dataset.
+
+We did not train a model, test detection accuracy, validate the new preprocessing,
+implement debate or complete all Capstone Handbook evaluation requirements.
+Raw drafts and billed token usage were not saved, so the effect of editing alone
+and the total cost cannot be calculated from these output files.
+
+8. WHERE ARE THE FILES?
+
+output/output/ contains this report and:
+- output1stcase_v10_opus_check.txt
+- output2ndcase_v10_opus_check.txt
+- output3rdcase_v10_opus_check.txt
+
+output/output/archive_experiences/ contains the 36 earlier outputs.
+They remain unchanged, including records of failed attempts.
+
+Example name: output2ndcase_v10_opus_check.txt
+2ndcase = regular payments; v10 = iteration; opus = model; check = repeat.
+
+Case data: agents/reference_cases/*.json
+Runner: agents/reference_cases/run_agent_iteration.py
+Usage instructions: agents/reference_cases/README.md
+The runner's --help option makes no API calls.
+
+9. WHAT SHOULD WE DO NEXT?
+
+Read the final case 1 report. For each conclusion ask: What does it claim?
+Which references support it? What is only a hypothesis?
+
+Then prepare a separate, varied evaluation set and arrange human assessment,
+using the handbook to plan the larger evaluation. Decide the API budget and
+criteria before running it. Keep expected answers out of model prompts.
+Preprocessing integration and agent debate are later, separate work.
+
+RECORD OF THE WORK
+Final live runtime/prompt version: dd0fbbd for both Opus sets.
+Archived outputs retain their original metadata; the original case 1 lacks full
+runtime metadata. This readable report replaces the long combined notes.
+Assessment basis: case inputs/criteria, saved outputs, Capstone_Handbook.pdf
+and CapstoneProjectProposal.pdf. No generated output was edited in this rewrite.

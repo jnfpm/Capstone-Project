@@ -1,0 +1,120 @@
+Case: 04_documented_payment
+Version: documents_v4_check_20261115
+Provider: anthropic
+Configured model: claude-opus-5-5
+Response budget per call: 8192
+Workflow: draft + one revision per role
+Code commit: f12451c77f9dda6c20ab44b5810c8aee547fc045
+Started (UTC): 2026-11-15T19:23:42.852224+00:00
+
+SHA256 agents/prompts.py: 5a4e96fbcf5aff45dc4901efa761a758c9c552f97000fc0c71912d67896589b6
+SHA256 agents/llm.py: 86ef33b2c320e969f0e3641afe5e6afa386ff9ce22f994f4d6f7270bb123f3f8
+SHA256 agents/case_context.py: 572dc5fd3d0e0403b4c91208a0422b09450ccc69452346f5435ad14bc0e65d40
+SHA256 agents/reference_cases/04_documented_payment.json: 3503f9a713ce0611e503b19166c178d1a8201e70dbc16afbd10758544018ba4b
+
+SUPPLIED EVIDENCE
+[
+  {
+    "id": "alert-synthetic-documented-payment-846e79e7-timestamp",
+    "source": "case_record",
+    "reference": "alert synthetic-documented-payment",
+    "description": "Timestamp: 2022-09-08 09:00:00"
+  },
+  {
+    "id": "alert-synthetic-documented-payment-846e79e7-acct-from",
+    "source": "case_record",
+    "reference": "alert synthetic-documented-payment",
+    "description": "acct_from: bank-A:customer-04"
+  },
+  {
+    "id": "alert-synthetic-documented-payment-846e79e7-acct-to",
+    "source": "case_record",
+    "reference": "alert synthetic-documented-payment",
+    "description": "acct_to: bank-B:provider-04"
+  },
+  {
+    "id": "alert-synthetic-documented-payment-846e79e7-amount-usd",
+    "source": "case_record",
+    "reference": "alert synthetic-documented-payment",
+    "description": "amount_usd: 1200"
+  },
+  {
+    "id": "transaction-documented-payment-04-4dcffd84-timestamp",
+    "source": "transaction",
+    "reference": "transaction documented-payment-04-4dcffd84",
+    "description": "Timestamp: 2022-09-08 09:00:00"
+  },
+  {
+    "id": "transaction-documented-payment-04-4dcffd84-amount-paid",
+    "source": "transaction",
+    "reference": "transaction documented-payment-04-4dcffd84",
+    "description": "Amount Paid: 1200"
+  },
+  {
+    "id": "transaction-documented-payment-04-4dcffd84-payment-currency",
+    "source": "transaction",
+    "reference": "transaction documented-payment-04-4dcffd84",
+    "description": "Payment Currency: USD"
+  },
+  {
+    "id": "transaction-documented-payment-04-4dcffd84-amount-usd",
+    "source": "transaction",
+    "reference": "transaction documented-payment-04-4dcffd84",
+    "description": "amount_usd: 1200"
+  },
+  {
+    "id": "transaction-documented-payment-04-4dcffd84-acct-from",
+    "source": "transaction",
+    "reference": "transaction documented-payment-04-4dcffd84",
+    "description": "acct_from: bank-A:customer-04"
+  },
+  {
+    "id": "transaction-documented-payment-04-4dcffd84-acct-to",
+    "source": "transaction",
+    "reference": "transaction documented-payment-04-4dcffd84",
+    "description": "acct_to: bank-B:provider-04"
+  },
+  {
+    "id": "model-synthetic-documented-payment-846e79e7-score",
+    "source": "model_output",
+    "reference": "scoring model output for alert synthetic-documented-payment",
+    "description": "Model output score: 0.78"
+  },
+  {
+    "id": "model-synthetic-documented-payment-846e79e7-alert",
+    "source": "model_output",
+    "reference": "scoring model output for alert synthetic-documented-payment",
+    "description": "Model output alert: True"
+  },
+  {
+    "id": "document-04-agreement-payment-terms",
+    "source": "case_record",
+    "reference": "Fictional agreement SYN-AGREEMENT-04, payment terms excerpt",
+    "description": "The supplied agreement states that Customer 04 will pay Service Provider 04 a monthly fee of 1200 USD for bookkeeping services. It identifies bank-A:customer-04 as the payer account and bank-B:provider-04 as the recipient account. The fee for August 2022 is due on 2022-09-08."
+  },
+  {
+    "id": "document-04-invoice-payment-details",
+    "source": "case_record",
+    "reference": "Fictional invoice SYN-INVOICE-04, payment details excerpt",
+    "description": "The supplied invoice, issued on 2022-09-01 by Service Provider 04 to Customer 04, requests 1200 USD for August 2022 bookkeeping services under SYN-AGREEMENT-04. Payment is due on 2022-09-08 from bank-A:customer-04 to bank-B:provider-04."
+  }
+]
+
+FINAL REPORTS (not automatically graded)
+
+PROSECUTION - CONCLUSION 1
+The supplied agreement (SYN-AGREEMENT-04) and invoice (SYN-INVOICE-04) state a 1200 USD payment for August 2022 bookkeeping services. Both documents give 2022-09-08 as the due date and name bank-A:customer-04 as payer and bank-B:provider-04 as recipient. The single supplied transfer matches these stated terms: 1200 USD sent from bank-A:customer-04 to bank-B:provider-04 at 2022-09-08 09:00:00, on the stated due date.
+Evidence: document-04-agreement-payment-terms, document-04-invoice-payment-details, transaction-documented-payment-04-4dcffd84-amount-usd, transaction-documented-payment-04-4dcffd84-acct-from, transaction-documented-payment-04-4dcffd84-acct-to, transaction-documented-payment-04-4dcffd84-timestamp
+
+PROSECUTION - CONCLUSION 2
+The scoring model raised an alert (alert True, score 0.78), but no reasons for the alert were supplied. The model output is not proof or a verified probability of wrongdoing. The documents' stated purpose does not verify their authenticity, the account ownership, or that bookkeeping services were delivered. The monthly fee stated in the agreement is a contractual term, not evidence of observed recurring transfers, and no complete account history was supplied. Requested information: the model's alert reasons, broader transaction history for bank-A:customer-04 and bank-B:provider-04, account ownership and customer/provider profile information, and evidence of service delivery or document provenance.
+Evidence: model-synthetic-documented-payment-846e79e7-alert, model-synthetic-documented-payment-846e79e7-score, document-04-agreement-payment-terms, document-04-invoice-payment-details, transaction-documented-payment-04-4dcffd84-acct-from, transaction-documented-payment-04-4dcffd84-acct-to
+
+DEFENSE - CONCLUSION 1
+The supplied agreement and invoice state that Customer 04 is to pay Service Provider 04 1200 USD for August 2022 bookkeeping services, due on 2022-09-08, from bank-A:customer-04 to bank-B:provider-04. The supplied transaction shows a payment of 1200 USD (amount_usd) from bank-A:customer-04 to bank-B:provider-04 at 2022-09-08 09:00:00. Its amount, sending and receiving accounts, and date coincide with the documented terms and due date.
+Evidence: document-04-agreement-payment-terms, document-04-invoice-payment-details, transaction-documented-payment-04-4dcffd84-amount-usd, transaction-documented-payment-04-4dcffd84-acct-from, transaction-documented-payment-04-4dcffd84-acct-to, transaction-documented-payment-04-4dcffd84-timestamp
+
+DEFENSE - CONCLUSION 2
+One possibility consistent with the packet is that this transfer is the August 2022 monthly bookkeeping fee payment described in the supplied agreement and invoice, since its amount, accounts and date match the documented terms. However, this match does not verify the documents' authenticity, the ownership of the accounts, or that the services were delivered. The agreement's reference to a monthly fee also does not establish that recurring transfers actually occurred. The model produced an alert with a score of 0.78, but no alert reasons were supplied, and a model score is not proof or a verified probability of wrongdoing. No complete account history and no ownership or customer profile information were supplied. Needed: the model's alert reasons, independent confirmation of the documents and the parties' relationship, account ownership and profile information, and the broader transaction history for both accounts.
+Evidence: document-04-agreement-payment-terms, document-04-invoice-payment-details, transaction-documented-payment-04-4dcffd84-amount-usd, transaction-documented-payment-04-4dcffd84-acct-from, transaction-documented-payment-04-4dcffd84-acct-to, transaction-documented-payment-04-4dcffd84-timestamp, model-synthetic-documented-payment-846e79e7-score, model-synthetic-documented-payment-846e79e7-alert
+

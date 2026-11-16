@@ -1,0 +1,70 @@
+
+Prosecuter:
+
+PROSECUTION — CONCLUSION 1
+Three inbound ACH credits of 5000 USD each were recorded into bank-A:central between 10:00:00 and 10:10:00 on 2022-09-08, from three different source accounts (source-1, source-2, source-3).
+Evidence: transaction-in-1-16e990e6-timestamp, transaction-in-1-16e990e6-amount-usd, transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-2-e2dbb589-amount-usd, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-timestamp, transaction-in-3-0b698730-amount-usd, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-acct-to
+
+PROSECUTION — CONCLUSION 2
+One outbound ACH payment of 14900 USD left bank-A:central at 10:15:00 on the same day and was sent to bank-B:destination, about five minutes after the last of the three inbound credits.
+Evidence: transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-in-3-0b698730-timestamp
+
+PROSECUTION — CONCLUSION 3 
+The total inbound amount (3 x 5000 = 15000 USD) is closely matched by the outbound amount (14900 USD), leaving a difference of about 100 USD, which is consistent with the central account being used as a pass-through. This is an interpretation that requires verification of account purpose and the full account ledger.
+Evidence: transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd, transaction-out-1-f44c30d0-amount-usd
+
+PROSECUTION — CONCLUSION 4
+The outbound amount of 14900 USD sits just below a round 15000 USD figure. This proximity is noted only as a possible reason for further review; no threshold rule or regulation was supplied, so it cannot be treated as evidence of intent.
+Evidence: transaction-out-1-f44c30d0-amount-usd, alert-synthetic-concentrated-e7ac94f0-amount-usd
+
+PROSECUTION — CONCLUSION 5
+The alert record matches the outbound transaction on timestamp, amount, payment format, and endpoints (bank-A:central to bank-B:destination), so the alert is anchored to that specific outbound payment.
+Evidence: alert-synthetic-concentrated-e7ac94f0-timestamp, alert-synthetic-concentrated-e7ac94f0-amount-usd, alert-synthetic-concentrated-e7ac94f0-payment-format, alert-synthetic-concentrated-e7ac94f0-acct-from, alert-synthetic-concentrated-e7ac94f0-acct-to, transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-acct-to
+
+PROSECUTION — CONCLUSION 6
+All supplied legs are denominated in USD, use ACH, and show country_from and country_to as PT, so the flow is concentrated in a single jurisdiction and payment format within the supplied rows.
+Evidence: transaction-in-1-16e990e6-country-from, transaction-in-1-16e990e6-country-to, transaction-in-2-e2dbb589-country-from, transaction-in-3-0b698730-country-from, transaction-out-1-f44c30d0-country-to, transaction-in-1-16e990e6-payment-format, transaction-in-2-e2dbb589-payment-format, transaction-in-3-0b698730-payment-format, transaction-out-1-f44c30d0-payment-format
+
+PROSECUTION — CONCLUSION 7
+The scoring model flagged this alert with a score of 0.91, and its stated reason is three send/receive events in 24 hours. This is a review signal only and does not establish that the activity is illicit or give a verified probability of crime.
+Evidence: model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1
+
+PROSECUTION — CONCLUSION 8
+The assessment is limited: the supplied rows cover only one day and one central account. No customer profile, source-of-funds or purpose information, prior account history, or counterparty KYC was supplied, so the source and downstream use of the funds, and whether the pattern is ordinary business activity, cannot be determined from this evidence.
+Evidence: alert-synthetic-concentrated-e7ac94f0-acct-from, alert-synthetic-concentrated-e7ac94f0-acct-to, transaction-in-1-16e990e6-acct-from, transaction-out-1-f44c30d0-acct-to, model-synthetic-concentrated-e7ac94f0-reason-1
+
+
+
+Defense: 
+
+CONCLUSION 1
+The alert's 14900 USD outbound transfer is supported by a matching transaction record with the same amount, timestamp, and ACH format, so the alert's core figures are internally consistent with the supplied transaction data.
+Evidence: alert-synthetic-concentrated-e7ac94f0-amount-usd, transaction-out-1-f44c30d0-amount-paid, alert-synthetic-concentrated-e7ac94f0-timestamp, transaction-out-1-f44c30d0-timestamp
+
+CONCLUSION 2
+Three separate inbound ACH credits of 5000 USD each were recorded into bank-A:central within about ten minutes, totaling 15000 USD. This is an observed pattern in the supplied rows, but the rows alone do not establish its purpose.
+Evidence: transaction-in-1-16e990e6-amount-paid, transaction-in-2-e2dbb589-amount-paid, transaction-in-3-0b698730-amount-paid, transaction-in-1-16e990e6-timestamp, transaction-in-3-0b698730-timestamp
+
+CONCLUSION 3 - - ESTÁ A DISTINGUIR HIPOTESES DE FACTOS O QUE É BOM!!!!!
+The outbound amount of 14900 USD is 100 USD less than the 15000 USD received. The supplied rows show no fee, netting, or other entry explaining the difference, so a benign explanation such as a fee or timing effect is a hypothesis that requires verification against ledger records.
+Evidence: transaction-out-1-f44c30d0-amount-paid, transaction-in-1-16e990e6-amount-paid, transaction-in-2-e2dbb589-amount-paid, transaction-in-3-0b698730-amount-paid
+
+CONCLUSION 4
+The model's stated reason, snd_recv_24h=3, matches the three inbound transactions visible in the supplied rows. The explanation supplied is a single feature, so it does not show the full basis for the 0.91 score.
+Evidence: model-synthetic-concentrated-e7ac94f0-reason-1, model-synthetic-concentrated-e7ac94f0-score
+
+CONCLUSION 5
+The central account's activity in the supplied window is consistent with a collection or pooling account that receives funds from several source accounts and forwards them. This is a hypothesis; verifying it would require account ownership, customer profile, and business purpose information that was not supplied.
+Evidence: transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-acct-from
+
+CONCLUSION 6
+The three inbound source accounts (source-1, source-2, source-3) are shown as distinct accounts, but the supplied data contains no information about their ownership, relationship to each other, or the purpose of the payments, so the review cannot determine whether the inflows are related.
+Evidence: transaction-in-1-16e990e6-acct-from, transaction-in-2-e2dbb589-acct-from, transaction-in-3-0b698730-acct-from
+
+CONCLUSION 7
+The evidence is limited to four transactions across a fifteen-minute window on 2022-09-08. No prior or subsequent account history, customer due diligence, or counterparty information for bank-B:destination was supplied, so this cannot confirm whether the rows represent complete account activity or whether the pattern is typical for the account.
+Evidence: alert-synthetic-concentrated-e7ac94f0-timestamp, transaction-in-1-16e990e6-timestamp, transaction-out-1-f44c30d0-acct-to
+
+CONCLUSION 8
+All supplied transactions are USD, ACH, and between PT-coded countries, which is consistent with a domestic-style payment flow. These shared characteristics do not by themselves indicate concealment or wrongdoing.
+Evidence: transaction-in-1-16e990e6-payment-currency, transaction-in-1-16e990e6-country-from, transaction-out-1-f44c30d0-country-to, transaction-out-1-f44c30d0-payment-format

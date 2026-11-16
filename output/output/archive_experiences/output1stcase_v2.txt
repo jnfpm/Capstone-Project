@@ -1,0 +1,52 @@
+Case: 01_concentrated_transfers
+Version: v2 - citation coverage and non-repetition
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget: 4096
+Code commit: a35a8eab284b2a82854ac6d6fc2f88b2ffccdec2
+Run started (UTC): 2026-11-11T13:50:03.413788+00:00
+
+PROSECUTION - CONCLUSION 1
+The supplied records show three inbound ACH credits of 5000 USD each into bank-A:central between 10:00:00 and 10:10:00 on 2022-09-08, followed by a single 14900 USD ACH outbound from bank-A:central to bank-B:destination at 10:15:00. This sequence may warrant investigation as possible aggregation of smaller inbound amounts before onward transfer, but it does not establish intent.
+Evidence: transaction-in-1-16e990e6-timestamp, transaction-in-1-16e990e6-amount-paid, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-2-e2dbb589-amount-paid, transaction-in-3-0b698730-timestamp, transaction-in-3-0b698730-amount-paid, transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-paid, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to
+
+PROSECUTION - CONCLUSION 2
+The inbound credits total 15000 USD (three 5000 USD transfers) and the outbound transfer is 14900 USD, leaving a 100 USD difference. The alert amount matches the outbound transfer. A small retained balance could be consistent with a fee or residual, but the supplied records do not explain it and this remains a hypothesis to verify.
+Evidence: transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd, transaction-out-1-f44c30d0-amount-usd, alert-synthetic-concentrated-e7ac94f0-amount-usd
+
+PROSECUTION - CONCLUSION 3
+The three inbound transfers come from three different source accounts (source-1, source-2, source-3) and all records show the same PT country pair. Possible explanations include a common controller of the source accounts or coordinated routing, but the supplied records do not show whether these accounts are related.
+Evidence: transaction-in-1-16e990e6-acct-from, transaction-in-2-e2dbb589-acct-from, transaction-in-3-0b698730-acct-from, transaction-in-1-16e990e6-country-from, transaction-in-2-e2dbb589-country-from, transaction-in-3-0b698730-country-from, transaction-out-1-f44c30d0-country-to
+
+PROSECUTION - CONCLUSION 4
+The scoring model flagged the alert with a score of 0.91 and an explanation of snd_recv_24h=3, which is consistent with the three inbound transfers. This is a review signal that prioritises the case; it is not evidence of wrongdoing or a verified probability of crime.
+Evidence: model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1
+
+PROSECUTION - CONCLUSION 5
+The supplied evidence is limited to these alert, transaction and model records. It does not include customer profiles, account history beyond the listed rows, the identity or relationship of the source and beneficiary parties, the stated purpose of the transfers, or any explanation for the 100 USD difference. These gaps prevent confirmation of the suspected pattern or of its intent, and further records are needed before any conclusion is drawn.
+Evidence: alert-synthetic-concentrated-e7ac94f0-timestamp, alert-synthetic-concentrated-e7ac94f0-acct-from, alert-synthetic-concentrated-e7ac94f0-acct-to, model-synthetic-concentrated-e7ac94f0-reason-1
+
+DEFENSE - CONCLUSION 1
+The three inbound ACH credits total 15,000 USD (5,000 each), and the single outbound ACH debit is 14,900 USD. The 100 USD difference is observed, but the supplied rows do not show whether it reflects fees, rounding, a partial retained balance, or other activity outside these rows, so it requires verification.
+Evidence: transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd, transaction-out-1-f44c30d0-amount-usd
+
+DEFENSE - CONCLUSION 2
+The inbound credits occurred at 10:00, 10:05 and 10:10, and the outbound debit occurred at 10:15 on the same date, with the alert timestamp matching the outbound debit. This short sequence is consistent with a pass-through pattern, but it is also consistent with routine batch collection and settlement. Batch schedules and the payment processing cutoffs would need to be checked before weighting the timing.
+Evidence: transaction-in-1-16e990e6-timestamp, transaction-in-2-e2dbb589-timestamp, transaction-in-3-0b698730-timestamp, transaction-out-1-f44c30d0-timestamp, alert-synthetic-concentrated-e7ac94f0-timestamp
+
+DEFENSE - CONCLUSION 3
+All four supplied legs use the ACH payment format, USD currency, and PT as both the origin and destination country. This narrows the observed activity to domestic-looking routing rather than cross-border movement, although the supplied fields do not confirm the customers' residency or business purpose.
+Evidence: transaction-in-1-16e990e6-payment-format, transaction-in-2-e2dbb589-payment-format, transaction-in-3-0b698730-payment-format, transaction-out-1-f44c30d0-payment-format, transaction-in-1-16e990e6-country-from, transaction-in-1-16e990e6-country-to, transaction-in-2-e2dbb589-country-from, transaction-in-2-e2dbb589-country-to, transaction-in-3-0b698730-country-from, transaction-in-3-0b698730-country-to, transaction-out-1-f44c30d0-country-from, transaction-out-1-f44c30d0-country-to
+
+DEFENSE - CONCLUSION 4
+The three inbound credits originate from three different source accounts (source-1, source-2, source-3) and all route to the same bank-A central account. The supplied rows do not show whether these source accounts belong to unrelated customers, related parties, or a common business, so the apparent concentration cannot be interpreted without ownership and relationship information.
+Evidence: transaction-in-1-16e990e6-acct-from, transaction-in-2-e2dbb589-acct-from, transaction-in-3-0b698730-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to
+
+DEFENSE - CONCLUSION 5
+The model output is a score of 0.91 with an alert flag of True, and its stated reason is snd_recv_24h=3, which indicates three send/receive events in 24 hours. This is a count-based review signal that does not identify the purpose of the transfers or establish that the activity was unlawful, so it should be weighed alongside the transaction context rather than treated as proof.
+Evidence: model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1
+
+DEFENSE - CONCLUSION 6
+The review lacks customer profiles, historical account baselines, stated purpose of payment, beneficiary details, and any activity beyond the supplied rows. Without these, it cannot be determined whether 5,000 USD legs are typical for the central account, whether the rows are complete, or whether the outbound beneficiary account is related to the inbound sources. These gaps limit both the risk and the innocent interpretations, and the absence of further records does not show that no other activity occurred.
+Evidence: alert-synthetic-concentrated-e7ac94f0-acct-from, alert-synthetic-concentrated-e7ac94f0-acct-to, alert-synthetic-concentrated-e7ac94f0-amount-usd, model-synthetic-concentrated-e7ac94f0-reason-1
+

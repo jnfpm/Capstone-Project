@@ -1,0 +1,278 @@
+CLEAR - DOCUMENTED PAYMENT AND EMPTY EVIDENCE
+Development evaluation, 15 November 2026
+
+1. WHAT THIS SESSION IS ABOUT
+
+Case 04 asks whether prosecution and defense can use a supplied agreement and
+invoice to explain a payment without treating those documents as proof of
+legitimacy. Case 05 asks whether the software refuses to investigate a case
+with no evidence before asking a language model for an answer.
+
+These are different checks. Case 04 produces two live reports. Case 05 should
+produce no report and make no model calls.
+
+The data are fictional. The transaction is 1,200 USD, from bank-A:customer-04
+to bank-B:provider-04, on 8 September 2022 at 09:00. Both document excerpts
+describe an August bookkeeping fee with those accounts, amount and due date.
+The agreement mentions a monthly fee. Only ONE actual payment is supplied.
+The simulated score is 0.78 and the alert is true; there are no model reasons.
+
+2. WHAT WAS ALREADY IMPLEMENTED
+
+The current code already loaded case 04 and its two document excerpts into
+CaseContext. I did not implement that handoff again. The JSON notes and parts
+of the README still described it as an unconnected draft; I updated those
+descriptions to match the code.
+
+The experiment runner still selected only the original three cases. I added
+--cases so a case can be evaluated on its own. Its default remains the original
+three. Case 05 is deliberately not offered as a live experiment.
+
+3. THE EXPERIMENTS, IN ORDER
+
+A. baseline_20261115: connection failure, NOT GRADED.
+Both role attempts failed with APIConnectionError in the restricted environment.
+There were no reports to evaluate. The failure was saved, not hidden or counted
+as evidence that the prompts were bad.
+
+B. baseline_retry_20261115: original prompts, real reports.
+The same baseline was run with network access outside the restricted environment.
+Prosecution returned two findings and defense three.
+
+Both reviewers used the documents and supported the main comparison. However,
+prosecution said: "Further investigation would be warranted only if those
+documents or the underlying relationship cannot be verified."
+The packet cannot establish that exclusive rule. Verification is useful, but
+successful verification would not rule out every other possible concern.
+Defense described the transfer and then described its match to the documents,
+repeating information across its first two findings.
+Verdict: baseline needs revision, especially the prosecution conclusion.
+
+C. documents_v2_20261115: general document rules added.
+Both roles returned two findings. The document-to-payment comparison was more
+compact. The new rules distinguished stated purpose from verified authenticity,
+service delivery and a proven history of recurring payments.
+
+Prosecution still wrote: "The only grounds for further review are ..." and
+included unverified documents among those grounds. That phrasing remained too
+exclusive and blurred missing information with evidence supporting suspicion.
+Verdict: improvement, but not yet accepted as the final pair.
+
+D. documents_v3_20261115: information gaps are not suspicious evidence.
+The exclusive investigation rule disappeared. Both roles returned two findings.
+However, prosecution's assessment said "The matching terms do not verify ..."
+while citing only the two documents and model outputs. That sentence relies on
+the match with the transaction, whose supporting fields were cited only in the
+previous finding. Those citations do not carry over automatically.
+Verdict: the reasoning improved, but the final assessment still needed its own
+complete support for the comparison.
+
+E. documents_v4_20261115: comparisons need both sides in EACH finding.
+The instructions now say to cite both document and transaction facts wherever
+an assessment repeats the match, or to state the verification limitation without
+repeating that comparison. Both roles returned two findings.
+
+The defense assessment cites both documents plus amount, currency, sender,
+recipient and timestamp fields. The prosecution assessment states the document
+verification limits directly and cites the model and document facts, with the
+account fields for the accounts it mentions. There is no exclusive rule about
+closing or continuing an investigation.
+Verdict: acceptable development result. Minor verbosity remains, especially
+some repeated account names and a short verification qualification in the
+prosecution observation. This is not a claim of perfect prose.
+
+F. documents_v4_check_20261115: repeat without changing the prompts.
+Both reports again have two findings. The first compares the payment with the
+documents. The second gives the role's interpretation, model limitations and
+records needed. The defense assessment again includes both sides of its match.
+Prosecution avoids asserting a new investigation rule. Neither reviewer claims
+innocence, authenticated documents, verified services or observed monthly history.
+Verdict: acceptable repeat on this development case. This is a consistency check,
+not an independent evaluation dataset.
+
+4. HOW THE FINAL CASE 04 REPORTS WERE ASSESSED
+
+Each candidate and confirmation run was read finding by finding against its
+saved evidence. The final case 04 candidates are v6, not the earlier v4/v5 runs:
+
+- Amount and currency: USD is supported by amount_usd, or by Amount Paid plus
+  Payment Currency. The actual and documented amounts agree.
+- Account pair: both transaction endpoints support the comparison; the two
+  documents identify the same payer and recipient.
+- Date: the transaction timestamp supports payment on the documented due date.
+- Purpose: the bookkeeping explanation is attributed to the agreement/invoice,
+  not invented from a payment format, country or risk score.
+- Interpretation: a plausible explanation is not proof of authenticity,
+  ownership, delivery of services or innocence.
+- Recurrence: a contractual monthly fee is not an observed monthly history.
+- Model output: the supplied alert and score are review signals, not a verified
+  probability of crime. Missing reasons are acknowledged.
+- Repetition: one principal comparison plus one assessment replaces the initial
+  defense report's separate transfer summary and document comparison.
+
+The record count is a property of the supplied packet, not a claim that no other
+payments exist. Some absence statements are packet-level limitations; an evidence
+ID does not prove that the corresponding information is absent from the world.
+
+5. CASE 05 AND OFFLINE CHECKS
+
+Two new tests load the actual case 05 JSON:
+- The orchestrator sees zero evidence, raises ValueError, never calls defense
+  and never invokes the supplied fake text generator.
+- Prosecution and defense, each called directly, both reject the empty context
+  without invoking that generator.
+
+Both tests passed. Their output is output5thcase_offline_20261115.txt.
+This checks the application guards, not how an LLM might answer an empty prompt.
+
+The initial full suite exposed an existing TypeError in the case 04 evidence
+test: reading_guide is a list, but the test searched for it inside a string.
+I changed the test to check each sentence. No production behaviour was changed
+to make that test pass. The corrected full suite passed all 32 tests, including
+the two new case 05 tests. The final prompt version was included in that run.
+
+The runner's --help command was checked without the API. Reusing an existing
+experiment name was also checked: it is rejected before any paid request.
+
+6. ORIGINAL CASES: REGRESSION REVIEW
+
+The v4 confirmation also reran cases 01, 02 and 03. Cases 02 and 03 retained
+adequate results. In case 01, the assessment referred to several sources or
+counterparties but cited their common destination rather than their source
+account fields. The observation had those fields; the assessment did not.
+That was a citation gap worth correcting, even though the underlying statement
+was true in the full packet. The earlier v10_opus_check reports did include
+those source references. One rerun cannot establish that the new document rules
+caused the gap; generative variability is also possible.
+
+G. final_v5_20261115: a source-diversity citation rule.
+The final change requires source-account references for claims about distinct
+senders, and recipient-account references for distinct recipients, in both
+drafting and editing. This is a general rule, not a hard-coded case answer.
+All four live cases are rerun with these same final prompts.
+
+Cases 01-03 passed the qualitative development review in v5:
+- Case 01: both assessments now cite the incoming source accounts. Totals
+  (15,000 USD), outgoing amount (14,900 USD), difference (100 USD) and elapsed
+  times (15 and 5 minutes) are correct and supported. The difference is not
+  presented as a final balance or proof of which funds financed the transfer.
+- Case 02: both reports retain the 3,600 USD total, same account pair and
+  31-day intervals. The scheduled-payment explanation stays hypothetical;
+  no business purpose or contract is invented.
+- Case 03: one finding per role acknowledges the missing transactions and
+  requests the required information without inventing a transaction pattern.
+
+The v5 case 04 prosecution was satisfactory. Its defense, however, hypothesized
+that the transfer was the documented fee while citing the documents and only
+the transaction timestamp, omitting amount and account support in that finding.
+Removing explicit comparison words had not removed the inference's need for
+support. I did not accept that defense report as final.
+
+H. documents_v6_20261115: support the documented-payment hypothesis itself.
+The document-specific instructions now require amount/currency, both accounts
+and timestamp references for a hypothesis identifying a transfer as the payment
+described in documents, even without the word "match". A timestamp alone does
+not support that connection. The evidence and substantive criteria are unchanged.
+
+Both v6 reports passed the development review, so v6 was repeated without
+changing prompts (documents_v6_check_20261115). Both confirmation reports also
+passed. In both defense assessments, the documented-payment hypothesis now
+cites both documents, payment amount/currency, sender, recipient and timestamp.
+Both prosecution reports avoid unsupported exclusive investigation rules.
+No final report treats document authenticity, ownership, service delivery or
+innocence as established. Each report has two findings, with no separate,
+repeated transfer-summary finding.
+
+I stopped changing the prompts at this point: the identified material failures
+were corrected and a repeat supported consistency for case 04. This is not a
+guarantee of perfect future output. The final v6 change is document-specific;
+cases 01-03 were live-checked with v5, not rerun with v6. All 32 offline tests
+passed again with v6. Remaining writing issues are minor verbosity and occasional
+technical labels, rather than a material unsupported conclusion in these runs.
+
+7. WHICH FILES CHANGED, AND WHY
+
+agents/prompts.py
+Added general document comparison, attribution and citation instructions,
+plus a rule supporting claims about distinct source/recipient accounts.
+Added matching editing rules. Existing personal comments were preserved.
+No expected answer, account number or case-specific score was inserted into
+the prompts. Evidence and evaluation criteria remained separate.
+
+agents/reference_cases/run_agent_iteration.py
+Added explicit case selection, duplicate-selection rejection, evidence snapshots
+and SHA256 source fingerprints. One file still contains both final reports.
+Existing filenames cannot be overwritten. A commit plus fingerprints identifies
+local modifications, but fingerprints are not a complete source-code archive.
+
+agents/tests/test_case_context.py
+Fixed the list-versus-string assertion in the existing document-evidence test.
+
+agents/tests/test_orchestrator.py
+Added the two case 05 rejection checks, with simple English comments explaining
+why their fake generator cannot call the API.
+
+agents/reference_cases/04_documented_payment.json and 05_empty_evidence.json
+Updated status/integration notes and outdated execution-status limitations.
+No case input, document excerpt or substantive evaluation criterion was changed.
+
+agents/reference_cases/README.md
+Documented selecting case 04, running case 05 offline and locating these outputs.
+
+No preprocessing, scorer, provider configuration or credentials were changed.
+No debate was added. The live runner calls the reviewers independently so it
+can preserve both diagnostic results; live runs do not exercise the orchestrator.
+
+8. FILE GUIDE AND LIMITATIONS
+
+There are SEVEN files in the main experiment folder:
+1. final_report.txt - this explanation and evaluation.
+2. output4thcase_documents_v6_20261115.txt - final case 04 candidate, both roles.
+3. output4thcase_documents_v6_check_20261115.txt - its unchanged confirmation.
+4. output5thcase_offline_20261115.txt - the two empty-evidence checks.
+5. output1stcase_final_v5_20261115.txt - case 01 after the source-citation fix.
+6. output2ndcase_final_v5_20261115.txt - case 02 regression check.
+7. output3rdcase_final_v5_20261115.txt - case 03 regression check.
+
+There are TEN files in archive_experiences: the failed connection attempt;
+case 04 baseline retry, v2, v3, v4, v4 confirmation and v5; and cases 01-03's
+v4 checks. These are different experiments, not duplicate copies of one run.
+The older experiment collection outside cases_04_05 was not changed.
+The case 05 file contains test results, not prosecution/defense reports.
+Earlier attempts and v4 confirmation outputs are in archive_experiences/.
+Nothing was deleted. Cases 01-03 use final_v5_20261115; case 04 uses documents_v6
+and documents_v6_check. The different tags show which prompts were actually
+tested, rather than pretending every output came from the same version.
+
+All case 04 runs used the same supplied evidence packet (verified by comparing
+its fingerprint). Source-file fingerprints can differ because status notes were
+updated; those notes were not sent to the model.
+
+Configuration: Anthropic, configured model claude-opus-5-5, response budget 8192,
+one draft plus one editing call per role. Prompts changed between baseline, v2,
+v3, v4, v5 and v6; model configuration and evidence did not. The outputs preserve the
+final reports, not the intermediate drafts or actual token usage. Costs are not
+estimated from the response cap. SDK transport retries are not counted here.
+In total, 14 successful case executions produced 28 reports: 8 executions of
+case 04 and 2 executions each of cases 01-03. Each successful report used one
+draft and one revision: 56 successful application-level generation calls.
+The initial failed connection attempt is separate; its SDK retries and any
+provider-side usage cannot be inferred from these files. Case 05 used no API.
+
+9. WHAT TO DO NEXT
+
+Read the final case 04 confirmation alongside its document and transaction
+evidence. Check one finding at a time, including the final hypothesis. Keep
+these cases as a development set. Next, use new documented-payment examples
+(including conflicting terms) and independent human assessment, instead of
+continuing to tune the same example indefinitely. Separately complete the real
+preprocessing handoff and account-history coverage before interpreting real
+alerts. Debate remains a later task; it was not part of this experiment.
+
+This is qualitative assessment by the coding assistant that also revised the
+prompts. It is not independent human evaluation. Repeated use of this case makes
+it a development case; successful reports do not establish general accuracy.
+The semantic criteria were applied manually; passing JSON/ID checks alone does
+not show that a claim is supported. More unseen cases and human review remain
+necessary. Real-data integration and account-history retrieval were not tested
+in these fictional-case experiments.

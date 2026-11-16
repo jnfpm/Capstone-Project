@@ -1,0 +1,19 @@
+Case: 01_concentrated_transfers
+Version: v5
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget per call: 4096
+Workflow: draft + one revision per role
+Code commit: d109cf39abb348ce4c5102acba1c496307b6b1f7
+Started (UTC): 2026-11-11T14:03:56.110570+00:00
+
+PROSECUTION - CONCLUSION 1
+On 2022-09-08, three ACH transfers of USD 5,000 each were credited to bank-A:central from three different source accounts: bank-A:source-1 at 10:00:00, bank-A:source-2 at 10:05:00, and bank-A:source-3 at 10:10:00. The inbound total is USD 15,000 within 10 minutes. At 10:15:00, bank-A:central sent USD 14,900 to bank-B:destination. That outbound amount is USD 100 less than the inbound total, and it occurred 5 minutes after the last inbound transfer and 15 minutes after the first.
+Evidence: transaction-in-1-16e990e6-timestamp, transaction-in-1-16e990e6-amount-usd, transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-2-e2dbb589-amount-usd, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-timestamp, transaction-in-3-0b698730-amount-usd, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to
+
+PROSECUTION - CONCLUSION 2
+The pattern could reflect consolidation of several source-account transfers into bank-A:central, followed by a near-equal onward transfer to bank-B:destination. This is only a possibility that may justify checking the purpose of the funds. The supplied records do not show why the USD 100 difference exists, what happened to the funds after bank-B:destination, or whether the central account's other activity is consistent with this pattern. The scoring model output (score 0.91, alert True) indicates that the model flagged this alert. It is not proof of criminal conduct or a verified probability of it. The packet contains no broader or complete account history for bank-A:central, bank-B:destination or the source accounts, and no ownership or profile information for them, so the purpose of these transfers cannot be assessed from the packet.
+Evidence: transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-1-16e990e6-timestamp, transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-acct-to, transaction-in-3-0b698730-timestamp, transaction-in-3-0b698730-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-usd, model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert
+
+DEFENSE: NOT GRADED - RuntimeError: Anthropic stopped at the response token limit (ANTHROPIC_MAX_TOKENS=4096). The report is incomplete and was not accepted. Increase the budget or reduce the requested output before retrying.
+

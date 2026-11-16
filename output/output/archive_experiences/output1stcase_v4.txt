@@ -1,0 +1,36 @@
+Case: 01_concentrated_transfers
+Version: v4
+Provider: anthropic
+Configured model: claude-haiku-5-5
+Response budget: 4096
+Code commit: bb7301faf321d4d8a2ef54f98b03408a5e9e90b2
+Started (UTC): 2026-11-11T14:01:08.924858+00:00
+
+PROSECUTION - CONCLUSION 1
+Three inbound ACH transfers of 5000 USD each were received into bank-A:central, from three different source accounts (source-1, source-2, source-3), totaling 15000 USD in the supplied records.
+Evidence: transaction-in-1-16e990e6-acct-to, transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-amount-paid, transaction-in-1-16e990e6-payment-currency, transaction-in-2-e2dbb589-acct-to, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-amount-paid, transaction-in-2-e2dbb589-payment-currency, transaction-in-3-0b698730-acct-to, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-amount-paid, transaction-in-3-0b698730-payment-currency
+
+PROSECUTION - CONCLUSION 2
+One outbound ACH transfer of 14900 USD left bank-A:central for bank-B:destination. This is 100 USD less than the 15000 USD total of the three inbound transfers into bank-A:central, a difference of 100 USD. The difference is not a retained balance and does not show that any specific inbound funds financed this transfer.
+Evidence: transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-payment-currency, transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd
+
+PROSECUTION - CONCLUSION 3
+The timing sequence is compressed: the inbound transfers were timestamped 10:00:00, 10:05:00 and 10:10:00 on 2022-09-08, and the outbound transfer was timestamped 10:15:00 on the same date. This is 15 minutes from the first inbound transfer to the outbound transfer and 5 minutes from the last inbound transfer to the outbound transfer.
+Evidence: transaction-in-1-16e990e6-timestamp, transaction-in-2-e2dbb589-timestamp, transaction-in-3-0b698730-timestamp, transaction-out-1-f44c30d0-timestamp
+
+PROSECUTION - CONCLUSION 4
+Possible interpretation, not an established fact: the pattern could reflect consolidation of several inbound payments into one central account followed by a near-full onward transfer, which may warrant checking the purpose of the inbound payments, the relationship between the source accounts and bank-A:central, and the reason for the onward transfer. The supplied records do not establish that the central account was used as an intermediary or that the funds were illicit. The alert record matches the outbound transfer's timestamp, source account, destination account and amount. The model output (score 0.91, alert True, reason snd_recv_24h=3) is a model signal that prompted review, not proof of criminal conduct or a verified probability of crime. The supplied packet contains no broader transaction history for bank-A:central or the source accounts, and no ownership or profile information for the source or destination accounts, so these items are needed to assess whether the pattern is ordinary or suspicious.
+Evidence: alert-synthetic-concentrated-e7ac94f0-timestamp, alert-synthetic-concentrated-e7ac94f0-acct-from, alert-synthetic-concentrated-e7ac94f0-acct-to, alert-synthetic-concentrated-e7ac94f0-amount-usd, model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-acct-from
+
+DEFENSE - CONCLUSION 1
+Three inbound USD ACH transfers of 5,000 each (15,000 total) were recorded into bank-A:central from three different source accounts (bank-A:source-1, bank-A:source-2, bank-A:source-3) at 10:00, 10:05 and 10:10 on 2022-09-08.
+Evidence: transaction-in-1-16e990e6-timestamp, transaction-in-1-16e990e6-amount-paid, transaction-in-1-16e990e6-amount-usd, transaction-in-1-16e990e6-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-timestamp, transaction-in-2-e2dbb589-amount-paid, transaction-in-2-e2dbb589-amount-usd, transaction-in-2-e2dbb589-acct-from, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-timestamp, transaction-in-3-0b698730-amount-paid, transaction-in-3-0b698730-amount-usd, transaction-in-3-0b698730-acct-from, transaction-in-3-0b698730-acct-to
+
+DEFENSE - CONCLUSION 2
+One outbound USD ACH transfer of 14,900 was recorded from bank-A:central to bank-B:destination at 10:15, which is 15 minutes after the first inbound transfer and 5 minutes after the last inbound transfer. The outbound amount is 100 less than the 15,000 total of the three inbound transfers. This difference is an arithmetic comparison of selected flows only and does not establish that any specific inbound funds financed the outbound transfer or identify a retained balance.
+Evidence: transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-in-1-16e990e6-timestamp, transaction-in-3-0b698730-timestamp, transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd
+
+DEFENSE - CONCLUSION 3
+A possible benign reading is that bank-A:central operates as a collection or pooling account that receives several smaller transfers and makes one consolidated disbursement, and that the 100 difference could reflect a fee, a rounding or netting effect, or a timing item. These are hypotheses only and are not verified by the supplied records. The packet also contains a model output with score 0.91, alert True and reason snd_recv_24h=3. This is a model signal, not proof of criminal conduct or a verified probability. Verification would require the account ownership and stated purpose for bank-A:central and bank-B:destination, the fee or charge records for the 100 difference, and any consolidation or pooling documentation. No broader or complete account history was supplied beyond these selected transactions, so recurring normal activity cannot be assessed from this packet.
+Evidence: transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-out-1-f44c30d0-amount-usd, model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1
+

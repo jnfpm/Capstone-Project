@@ -1,0 +1,29 @@
+Case: 01_concentrated_transfers
+Version: v7_sonnet
+Provider: anthropic
+Configured model: claude-sonnet-5-5
+Response budget per call: 8192
+Workflow: draft + one revision per role
+Code commit: 40c96b3ab589501ed5707a431cf50e3ab8b02a9c
+Started (UTC): 2026-11-11T14:13:49.174219+00:00
+
+PROSECUTION - CONCLUSION 1
+On 2022-09-08, three separate 5,000 USD transfers (15,000 USD in total) went into bank-A:central from three different accounts: bank-A:source-1 at 10:00:00, bank-A:source-2 at 10:05:00 and bank-A:source-3 at 10:10:00. They arrived at 5-minute intervals.
+Evidence: transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd, transaction-in-1-16e990e6-acct-from, transaction-in-2-e2dbb589-acct-from, transaction-in-3-0b698730-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to, transaction-in-1-16e990e6-timestamp, transaction-in-2-e2dbb589-timestamp, transaction-in-3-0b698730-timestamp
+
+PROSECUTION - CONCLUSION 2
+At 10:15:00 on the same date, bank-A:central sent 14,900 USD to bank-B:destination. This was 15 minutes after the first incoming transfer and 5 minutes after the last. The outgoing amount is 100 USD less than the 15,000 USD received across the three incoming transfers. That difference is only a comparison of selected flows. It is not a retained balance and does not show that these incoming funds financed the outgoing transfer.
+Evidence: transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-out-1-f44c30d0-timestamp, transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd, transaction-in-1-16e990e6-timestamp, transaction-in-3-0b698730-timestamp, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to
+
+PROSECUTION - CONCLUSION 3
+One possibility is that bank-A:central acted as a short-term collection point that quickly forwarded most of the funds received to a single destination account. The pattern justifies checking its purpose, but it does not establish wrongdoing. The model flagged the alert with a score of 0.91. That output is a signal for review, not proof of crime or a verified probability. No account history, ownership or profile information was supplied. Please provide the account holders and their relationships, the stated purpose of the transfers, the normal activity of bank-A:central, and any related transfers outside this packet.
+Evidence: model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to, transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd, transaction-out-1-f44c30d0-amount-usd, transaction-in-1-16e990e6-timestamp, transaction-in-2-e2dbb589-timestamp, transaction-in-3-0b698730-timestamp, transaction-out-1-f44c30d0-timestamp
+
+DEFENSE - CONCLUSION 1
+Three incoming USD transfers of 5,000 each (15,000 in total) went from three different accounts (bank-A:source-1, bank-A:source-2, bank-A:source-3) to bank-A:central at 10:00, 10:05 and 10:10 on 2022-09-08. At 10:15, 5 minutes after the last incoming transfer, bank-A:central sent 14,900 USD to bank-B:destination. The outgoing amount is 100 USD less than the incoming total. That difference is not a retained or final balance, and it does not show that any particular incoming funds financed the outgoing transfer.
+Evidence: transaction-in-1-16e990e6-amount-usd, transaction-in-2-e2dbb589-amount-usd, transaction-in-3-0b698730-amount-usd, transaction-in-1-16e990e6-acct-from, transaction-in-2-e2dbb589-acct-from, transaction-in-3-0b698730-acct-from, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to, transaction-in-1-16e990e6-timestamp, transaction-in-2-e2dbb589-timestamp, transaction-in-3-0b698730-timestamp, transaction-out-1-f44c30d0-timestamp, transaction-out-1-f44c30d0-amount-usd, transaction-out-1-f44c30d0-acct-from, transaction-out-1-f44c30d0-acct-to
+
+DEFENSE - CONCLUSION 2
+Incoming transfers to bank-A:central followed by a later outgoing transfer from it are consistent with a possible pass-through or consolidation pattern, but that is only a possibility. The model alert (score 0.91, reason snd_recv_24h=3) is a signal for review, not proof of wrongdoing or a verified explanation. The supplied records show the sequence but not its purpose, so legitimate explanations cannot be ruled out. No complete account history and no ownership or profile information for the listed accounts was supplied. Please provide the relationship among the accounts, the business purpose of the transfers, bank-A:central's prior and later activity, and any supporting documents or customer explanation.
+Evidence: model-synthetic-concentrated-e7ac94f0-score, model-synthetic-concentrated-e7ac94f0-alert, model-synthetic-concentrated-e7ac94f0-reason-1, transaction-in-1-16e990e6-acct-to, transaction-in-2-e2dbb589-acct-to, transaction-in-3-0b698730-acct-to, transaction-out-1-f44c30d0-acct-from, transaction-in-1-16e990e6-timestamp, transaction-in-2-e2dbb589-timestamp, transaction-in-3-0b698730-timestamp, transaction-out-1-f44c30d0-timestamp
+

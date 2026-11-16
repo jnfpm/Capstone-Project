@@ -1,0 +1,46 @@
+Case: 03_insufficient_information
+Version: final_v5_20261115
+Provider: anthropic
+Configured model: claude-opus-5-5
+Response budget per call: 8192
+Workflow: draft + one revision per role
+Code commit: f12451c77f9dda6c20ab44b5810c8aee547fc045
+Started (UTC): 2026-11-15T19:28:55.582766+00:00
+
+SHA256 agents/prompts.py: cd30adb27f119b37d3d2e4816fbd91d10e334871f4441322d6642d19b2471729
+SHA256 agents/llm.py: 86ef33b2c320e969f0e3641afe5e6afa386ff9ce22f994f4d6f7270bb123f3f8
+SHA256 agents/case_context.py: 572dc5fd3d0e0403b4c91208a0422b09450ccc69452346f5435ad14bc0e65d40
+SHA256 agents/reference_cases/03_insufficient_information.json: 879c284c63ce95cb2bfa195b17cdf76752903902942808c1437eeb7cc58c7142
+
+SUPPLIED EVIDENCE
+[
+  {
+    "id": "alert-synthetic-incomplete-24a0c520-timestamp",
+    "source": "case_record",
+    "reference": "alert synthetic-incomplete",
+    "description": "Timestamp: 2022-09-08 12:00:00"
+  },
+  {
+    "id": "model-synthetic-incomplete-24a0c520-score",
+    "source": "model_output",
+    "reference": "scoring model output for alert synthetic-incomplete",
+    "description": "Model output score: 0.88"
+  },
+  {
+    "id": "model-synthetic-incomplete-24a0c520-alert",
+    "source": "model_output",
+    "reference": "scoring model output for alert synthetic-incomplete",
+    "description": "Model output alert: True"
+  }
+]
+
+FINAL REPORTS (not automatically graded)
+
+PROSECUTION - CONCLUSION 1
+The packet contains only an alert timestamp (2022-09-08 12:00:00) and model output showing an alert flag of True with a score of 0.88; no transactions were supplied. The model signal warrants review, but it is not proof or a verified probability of illicit activity and cannot by itself establish any transaction pattern. No reasons for the model alert were supplied. To assess whether further investigation is justified, the review needs the alert reasons, transaction amounts, currencies, sending and receiving accounts, timestamps, and relevant account history. The absence of these records in this packet does not show that no relevant activity exists.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp, model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert
+
+DEFENSE - CONCLUSION 1
+The packet contains only an alert timestamp (2022-09-08 12:00:00) and model output (score 0.88, alert: True). No transactions were supplied, so no transaction pattern can be established or interpreted. The model signal warrants review, but it is not proof or a verified probability of wrongdoing, and the model's reasons were not supplied. To assess the alert, the following are needed: the model's alert reasons, transaction amounts and currencies, sending and receiving accounts, timestamps, and relevant account history.
+Evidence: alert-synthetic-incomplete-24a0c520-timestamp, model-synthetic-incomplete-24a0c520-score, model-synthetic-incomplete-24a0c520-alert
+

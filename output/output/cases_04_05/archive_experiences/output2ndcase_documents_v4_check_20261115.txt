@@ -1,0 +1,240 @@
+Case: 02_regular_payments
+Version: documents_v4_check_20261115
+Provider: anthropic
+Configured model: claude-opus-5-5
+Response budget per call: 8192
+Workflow: draft + one revision per role
+Code commit: f12451c77f9dda6c20ab44b5810c8aee547fc045
+Started (UTC): 2026-11-15T19:25:19.770635+00:00
+
+SHA256 agents/prompts.py: 5a4e96fbcf5aff45dc4901efa761a758c9c552f97000fc0c71912d67896589b6
+SHA256 agents/llm.py: 86ef33b2c320e969f0e3641afe5e6afa386ff9ce22f994f4d6f7270bb123f3f8
+SHA256 agents/case_context.py: 572dc5fd3d0e0403b4c91208a0422b09450ccc69452346f5435ad14bc0e65d40
+SHA256 agents/reference_cases/02_regular_payments.json: e43e1f384cd48d4872576adef82f71ad88e143c0bc15608fd8da29734e19ee55
+
+SUPPLIED EVIDENCE
+[
+  {
+    "id": "alert-synthetic-regular-42a409dc-timestamp",
+    "source": "case_record",
+    "reference": "alert synthetic-regular",
+    "description": "Timestamp: 2022-09-08 09:00:00"
+  },
+  {
+    "id": "alert-synthetic-regular-42a409dc-acct-from",
+    "source": "case_record",
+    "reference": "alert synthetic-regular",
+    "description": "acct_from: bank-A:customer"
+  },
+  {
+    "id": "alert-synthetic-regular-42a409dc-acct-to",
+    "source": "case_record",
+    "reference": "alert synthetic-regular",
+    "description": "acct_to: bank-B:beneficiary"
+  },
+  {
+    "id": "alert-synthetic-regular-42a409dc-amount-usd",
+    "source": "case_record",
+    "reference": "alert synthetic-regular",
+    "description": "amount_usd: 1200"
+  },
+  {
+    "id": "alert-synthetic-regular-42a409dc-payment-format",
+    "source": "case_record",
+    "reference": "alert synthetic-regular",
+    "description": "Payment Format: ACH"
+  },
+  {
+    "id": "transaction-regular-1-bbaeff66-timestamp",
+    "source": "transaction",
+    "reference": "transaction regular-1-bbaeff66",
+    "description": "Timestamp: 2022-07-08 09:00:00"
+  },
+  {
+    "id": "transaction-regular-1-bbaeff66-amount-paid",
+    "source": "transaction",
+    "reference": "transaction regular-1-bbaeff66",
+    "description": "Amount Paid: 1200"
+  },
+  {
+    "id": "transaction-regular-1-bbaeff66-payment-format",
+    "source": "transaction",
+    "reference": "transaction regular-1-bbaeff66",
+    "description": "Payment Format: ACH"
+  },
+  {
+    "id": "transaction-regular-1-bbaeff66-payment-currency",
+    "source": "transaction",
+    "reference": "transaction regular-1-bbaeff66",
+    "description": "Payment Currency: USD"
+  },
+  {
+    "id": "transaction-regular-1-bbaeff66-amount-usd",
+    "source": "transaction",
+    "reference": "transaction regular-1-bbaeff66",
+    "description": "amount_usd: 1200"
+  },
+  {
+    "id": "transaction-regular-1-bbaeff66-acct-from",
+    "source": "transaction",
+    "reference": "transaction regular-1-bbaeff66",
+    "description": "acct_from: bank-A:customer"
+  },
+  {
+    "id": "transaction-regular-1-bbaeff66-acct-to",
+    "source": "transaction",
+    "reference": "transaction regular-1-bbaeff66",
+    "description": "acct_to: bank-B:beneficiary"
+  },
+  {
+    "id": "transaction-regular-1-bbaeff66-country-from",
+    "source": "transaction",
+    "reference": "transaction regular-1-bbaeff66",
+    "description": "country_from: PT"
+  },
+  {
+    "id": "transaction-regular-1-bbaeff66-country-to",
+    "source": "transaction",
+    "reference": "transaction regular-1-bbaeff66",
+    "description": "country_to: PT"
+  },
+  {
+    "id": "transaction-regular-2-bc7eded6-timestamp",
+    "source": "transaction",
+    "reference": "transaction regular-2-bc7eded6",
+    "description": "Timestamp: 2022-08-08 09:00:00"
+  },
+  {
+    "id": "transaction-regular-2-bc7eded6-amount-paid",
+    "source": "transaction",
+    "reference": "transaction regular-2-bc7eded6",
+    "description": "Amount Paid: 1200"
+  },
+  {
+    "id": "transaction-regular-2-bc7eded6-payment-format",
+    "source": "transaction",
+    "reference": "transaction regular-2-bc7eded6",
+    "description": "Payment Format: ACH"
+  },
+  {
+    "id": "transaction-regular-2-bc7eded6-payment-currency",
+    "source": "transaction",
+    "reference": "transaction regular-2-bc7eded6",
+    "description": "Payment Currency: USD"
+  },
+  {
+    "id": "transaction-regular-2-bc7eded6-amount-usd",
+    "source": "transaction",
+    "reference": "transaction regular-2-bc7eded6",
+    "description": "amount_usd: 1200"
+  },
+  {
+    "id": "transaction-regular-2-bc7eded6-acct-from",
+    "source": "transaction",
+    "reference": "transaction regular-2-bc7eded6",
+    "description": "acct_from: bank-A:customer"
+  },
+  {
+    "id": "transaction-regular-2-bc7eded6-acct-to",
+    "source": "transaction",
+    "reference": "transaction regular-2-bc7eded6",
+    "description": "acct_to: bank-B:beneficiary"
+  },
+  {
+    "id": "transaction-regular-2-bc7eded6-country-from",
+    "source": "transaction",
+    "reference": "transaction regular-2-bc7eded6",
+    "description": "country_from: PT"
+  },
+  {
+    "id": "transaction-regular-2-bc7eded6-country-to",
+    "source": "transaction",
+    "reference": "transaction regular-2-bc7eded6",
+    "description": "country_to: PT"
+  },
+  {
+    "id": "transaction-regular-3-2a92190e-timestamp",
+    "source": "transaction",
+    "reference": "transaction regular-3-2a92190e",
+    "description": "Timestamp: 2022-09-08 09:00:00"
+  },
+  {
+    "id": "transaction-regular-3-2a92190e-amount-paid",
+    "source": "transaction",
+    "reference": "transaction regular-3-2a92190e",
+    "description": "Amount Paid: 1200"
+  },
+  {
+    "id": "transaction-regular-3-2a92190e-payment-format",
+    "source": "transaction",
+    "reference": "transaction regular-3-2a92190e",
+    "description": "Payment Format: ACH"
+  },
+  {
+    "id": "transaction-regular-3-2a92190e-payment-currency",
+    "source": "transaction",
+    "reference": "transaction regular-3-2a92190e",
+    "description": "Payment Currency: USD"
+  },
+  {
+    "id": "transaction-regular-3-2a92190e-amount-usd",
+    "source": "transaction",
+    "reference": "transaction regular-3-2a92190e",
+    "description": "amount_usd: 1200"
+  },
+  {
+    "id": "transaction-regular-3-2a92190e-acct-from",
+    "source": "transaction",
+    "reference": "transaction regular-3-2a92190e",
+    "description": "acct_from: bank-A:customer"
+  },
+  {
+    "id": "transaction-regular-3-2a92190e-acct-to",
+    "source": "transaction",
+    "reference": "transaction regular-3-2a92190e",
+    "description": "acct_to: bank-B:beneficiary"
+  },
+  {
+    "id": "transaction-regular-3-2a92190e-country-from",
+    "source": "transaction",
+    "reference": "transaction regular-3-2a92190e",
+    "description": "country_from: PT"
+  },
+  {
+    "id": "transaction-regular-3-2a92190e-country-to",
+    "source": "transaction",
+    "reference": "transaction regular-3-2a92190e",
+    "description": "country_to: PT"
+  },
+  {
+    "id": "model-synthetic-regular-42a409dc-score",
+    "source": "model_output",
+    "reference": "scoring model output for alert synthetic-regular",
+    "description": "Model output score: 0.78"
+  },
+  {
+    "id": "model-synthetic-regular-42a409dc-alert",
+    "source": "model_output",
+    "reference": "scoring model output for alert synthetic-regular",
+    "description": "Model output alert: True"
+  }
+]
+
+FINAL REPORTS (not automatically graded)
+
+PROSECUTION - CONCLUSION 1
+The packet contains three transfers from bank-A:customer to bank-B:beneficiary, each for 1,200 USD, totalling 3,600 USD. They occurred on 2022-07-08, 2022-08-08 and 2022-09-08, each at 09:00:00, so each later transfer followed the previous one by 31 days. The alert record has the same timestamp, accounts and 1,200 USD amount as the third transfer.
+Evidence: transaction-regular-1-bbaeff66-amount-usd, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-3-2a92190e-amount-usd, transaction-regular-1-bbaeff66-acct-from, transaction-regular-2-bc7eded6-acct-from, transaction-regular-3-2a92190e-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-acct-to, transaction-regular-1-bbaeff66-timestamp, transaction-regular-2-bc7eded6-timestamp, transaction-regular-3-2a92190e-timestamp, alert-synthetic-regular-42a409dc-timestamp, alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to, alert-synthetic-regular-42a409dc-amount-usd
+
+PROSECUTION - CONCLUSION 2
+The packet does not support a specific suspicious pattern. The fixed-amount, fixed-interval transfers between the same two accounts could warrant checking their purpose, but repetition alone is not evidence of misconduct. The model flagged the alert with a score of 0.78; its reasons were not supplied, and its output is neither proof nor a verified probability of crime. The packet includes no ownership or customer-profile information for either account, no complete account history and no documentation of the payments' purpose; this absence is limited to the packet and does not show that no other activity exists. Further assessment would need the model's alert reasons, ownership and profile details for both accounts, the relationship between the parties, the stated purpose of the payments and fuller transaction history for both accounts.
+Evidence: model-synthetic-regular-42a409dc-score, model-synthetic-regular-42a409dc-alert, transaction-regular-1-bbaeff66-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-acct-from, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-acct-from, transaction-regular-3-2a92190e-acct-to, transaction-regular-1-bbaeff66-amount-usd, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-3-2a92190e-amount-usd, transaction-regular-1-bbaeff66-timestamp, transaction-regular-2-bc7eded6-timestamp, transaction-regular-3-2a92190e-timestamp
+
+DEFENSE - CONCLUSION 1
+The packet contains three transfers from bank-A:customer to bank-B:beneficiary, each for 1,200 USD, timestamped 2022-07-08 09:00:00, 2022-08-08 09:00:00 and 2022-09-08 09:00:00. Together they total 3,600 USD. The first and second transfers are 31 days apart, as are the second and third, and all occur at the same time of day. The alert record (2022-09-08 09:00:00, bank-A:customer to bank-B:beneficiary, 1,200 USD) corresponds to the third transfer.
+Evidence: transaction-regular-1-bbaeff66-amount-usd, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-3-2a92190e-amount-usd, transaction-regular-1-bbaeff66-acct-from, transaction-regular-2-bc7eded6-acct-from, transaction-regular-3-2a92190e-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-acct-to, transaction-regular-1-bbaeff66-timestamp, transaction-regular-2-bc7eded6-timestamp, transaction-regular-3-2a92190e-timestamp, alert-synthetic-regular-42a409dc-timestamp, alert-synthetic-regular-42a409dc-acct-from, alert-synthetic-regular-42a409dc-acct-to, alert-synthetic-regular-42a409dc-amount-usd
+
+DEFENSE - CONCLUSION 2
+One possibility is that the fixed amount, the same sender-beneficiary pair and the monthly, same-time cadence reflect a scheduled or recurring payment arrangement. This is only a hypothesis. No document in the packet states a purpose, and the repetition neither confirms nor rules out any explanation. The model produced a score of 0.78 and an alert flag, but its reasons were not supplied. That output is a signal warranting review, not proof or a verified probability of wrongdoing. No complete account history was supplied, so the absence of other activity in the packet does not show that none exists. Verification would require ownership and profile information for both accounts, the relationship between the parties, any documentation of the payment purpose or a standing payment instruction, broader transaction history for both accounts, and the model's alert rationale.
+Evidence: transaction-regular-1-bbaeff66-acct-from, transaction-regular-1-bbaeff66-acct-to, transaction-regular-2-bc7eded6-acct-from, transaction-regular-2-bc7eded6-acct-to, transaction-regular-3-2a92190e-acct-from, transaction-regular-3-2a92190e-acct-to, transaction-regular-1-bbaeff66-amount-usd, transaction-regular-2-bc7eded6-amount-usd, transaction-regular-3-2a92190e-amount-usd, transaction-regular-1-bbaeff66-timestamp, transaction-regular-2-bc7eded6-timestamp, transaction-regular-3-2a92190e-timestamp, model-synthetic-regular-42a409dc-score, model-synthetic-regular-42a409dc-alert
+
