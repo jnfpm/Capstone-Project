@@ -9,9 +9,11 @@ from typing import Mapping, Sequence
 import pandas as pd
 
 from agents.case_context import ALERT_FIELDS, CaseContext, build_case_context
+from agents.case_data import DEFAULT_JOINED_PATH, load_case_data  # Retrieve source-backed case history.
 from agents.contracts import AgentReport
 from agents.llm import TextGenerator
 from agents.orchestrator import DebateResult, review_case
+from agents.regulation_retriever import retrieve_regulations  # Retrieve local official AML passages.
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 # The current preprocessing pipeline lives in aml; alerts_model is the old version.
@@ -130,7 +132,8 @@ def review_alert(
     *,
     features_dir: Path = DEFAULT_FEATURES_DIR,
     model_path: Path = DEFAULT_MODEL_PATH,
-    related_transactions: Sequence[Mapping[str, object]] = (),
+    related_transactions: Sequence[Mapping[str, object]] | None = None,  # None enables automatic source retrieval.
+    joined_path: Path = DEFAULT_JOINED_PATH,  # Allow a caller to select the joined source dataset.
     text_generator: TextGenerator | None = None,
 ) -> AlertReview:
     """Score one prepared transaction and create its two-sided agent review.
@@ -176,11 +179,46 @@ def review_alert(
     alert_row = meta_day.iloc[target_index].to_dict()
     alert_row.update(X_day.iloc[target_index].to_dict())
     alert = {field: alert_row[field] for field in ALERT_FIELDS if field in alert_row}
+    history_note = "Related transaction history was supplied by the caller."  # Describe caller-provided data.
+    if related_transactions is None:  # Retrieve history automatically unless the caller supplied it.
+        try:  # Keep a missing local source visible while allowing synthetic offline reviews.
+            case_data = load_case_data(row_id, alert, joined_path=joined_path)  # Fetch target and recent history.
+            related_transactions = case_data.transactions  # Pass retrieved source rows into the case context.
+            history_note = case_data.coverage_note  # Preserve the lookup window and truncation status.
+        except FileNotFoundError:  # Distinguish unavailable source data from an empty history result.
+            related_transactions = ()  # Do not invent transaction history when the source file is absent.
+            history_note = (  # State why the agents have no source history.
+                "Related transaction history was not retrieved because the source file is missing: "  # Explain the lookup failure.
+                f"{joined_path}."  # Identify the required source path.
+            )  # Finish the missing-history note.
+    regulation_query = " ".join(  # Build a short query from general AML concepts and alert context.
+        [  # Keep the terms focused on the evidence available in this case.
+            "anti-money laundering suspicious transactions monitoring risk factors transfers traceability payer payee",  # Search core AML provisions.
+            str(alert.get("country_from", "")),  # Include the sender country when available.
+            str(alert.get("country_to", "")),  # Include the receiver country when available.
+            str(alert.get("Payment Format", "")),  # Include the payment format when available.
+        ]  # Finish the regulation retrieval terms.
+    )  # Create the complete local-search query.
+    regulation_result = retrieve_regulations(regulation_query)  # Search approved local texts without making a live API call.
     context: CaseContext = build_case_context(
         alert_id=str(row_id),
         alert=alert,
-        transactions=related_transactions,
+        transactions=related_transactions,  # Supply retrieved or explicitly provided transaction facts.
         model_output=model_output,
+        additional_evidence=[  # Record retrieval coverage and add source-backed legal passages.
+            {  # Represent the retrieval result as a case note, never as a transaction fact.
+                "id": f"history-{row_id}-coverage",  # Give the coverage note a stable case-specific ID.
+                "source": "case_record",  # Mark this as retrieval metadata rather than transaction evidence.
+                "reference": f"history lookup for alert {row_id}",  # Identify the lookup described by the note.
+                "description": history_note,  # Explain the time window, result count, or missing source.
+            },  # Finish the retrieval-coverage evidence record.
+            {  # Report which legal sources were available for this review.
+                "id": f"regulation-search-{row_id}-coverage",  # Give the legal-search note a stable ID.
+                "source": "case_record",  # Mark coverage as retrieval metadata, not a legal rule.
+                "reference": f"regulation search for alert {row_id}",  # Identify the source-search operation.
+                "description": regulation_result.coverage_note,  # State available and missing legal sources.
+            },  # Finish the regulation-search coverage record.
+        ] + [passage.as_evidence() for passage in regulation_result.passages],  # Add the retrieved legal passages.
     )
     debate = review_case(context, text_generator=text_generator)
 

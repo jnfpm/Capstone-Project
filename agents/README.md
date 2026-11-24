@@ -106,8 +106,76 @@ print(result.debate.defense)
 
 This prepared-data example requires compatible preprocessing/model artifacts;
 its real-data path was not exercised by the synthetic report experiment.
-Related history can be supplied via `related_transactions`. Automatic retrieval
-of broader history from the raw transaction store is not implemented.
+Related history is retrieved by `agents/case_data.py` from
+`aml/data/processed/hi_small_joined.parquet` when `review_alert` is called
+without an explicit `related_transactions` argument. The loader includes the
+selected transaction and up to 20 most recent transactions from the prior 48
+hours that involve either alert account. It selects explicit source columns,
+excludes training labels, assigns stable transaction IDs, and adds a coverage
+note that says whether the history was capped. When the joined source file is
+missing, the review records that history could not be retrieved instead of
+presenting the empty result as proof that no transactions occurred. Callers can
+still pass `related_transactions` to provide their own source rows.
+
+Regulatory passages are searched locally by `agents/regulation_retriever.py`.
+From the repository root, download the official EUR-Lex HTML sources once with
+`python -m agents.regulation_retriever --download`. The downloader contacts
+only the registered official URLs and does not run automatically during an
+alert review. The local text files for the EBA guideline and Directive (EU)
+2018/1673 are searchable without network access. Search results cite the
+document title, section, version, applicability note and official URL. The
+corpus includes Regulation (EU) 2023/1113 as a separate transfers and
+crypto-assets source; it is not the AMLR (Regulation (EU) 2024/1624). A
+coverage note is added to each service case so missing local documents remain
+visible to the agents.
+
+The corpus also includes the actual AMLR (Regulation (EU) 2024/1624), retrieved
+as official English XHTML from the EU Publications Office CELLAR endpoint and
+cited through EUR-Lex. Its general application date is 10 July 2027, so the
+2022 reference debate includes AMLR passages only as future-framework context.
+The old file named `duplicate_regulation_eu_2023_1113_misnamed_2024_1624.pdf`
+remains Regulation (EU) 2023/1113; it is not used as the AMLR source. The
+retriever also includes a 2021 consolidated Directive (EU) 2015/849 for the
+2022 example date, alongside the 2024 consolidation for current reference.
+
+`agents/reference_cases/show_simulated_debate.py` attaches retrieved passages
+from Directive (EU) 2015/849 Articles 1 and 33 and AMLR Articles 2 and 69 before
+calling `run_debate()`. It adds an explicit date and jurisdiction limit: the
+case is dated 8 September 2022, AMLR is not applied retroactively, and no
+national statute or regulated-entity status is supplied. The prosecution,
+defense and reply text is prewritten for demonstration; only the retrieval,
+evidence-ID checks and orchestration are executed. Run it from the repository
+root in the `clear-aml` environment with `python -m agents.reference_cases.show_simulated_debate`.
+No model API calls are made.
+
+### New debate tests
+
+`agents/tests/test_orchestrator.py` now contains four tests for
+`run_debate()`:
+
+1. `test_run_debate_keeps_initial_reports_independent_and_replies_after_both`
+   replaces model calls with helpers named `create_prosecution`,
+   `create_defense` and `create_reply`. The prosecution helper records that
+   its report finished first and returns a simulated prosecution report. The
+   defense helper receives only the original case context and returns a
+   simulated independent defense report. The reply helper receives the
+   original context and both completed reports, then returns a simulated
+   defense reply. The test checks the order `prosecution -> defense -> reply`
+   and confirms that all three outputs are returned separately.
+2. `test_run_debate_rejects_reply_to_unknown_prosecution_finding` supplies a
+   reply aimed at a prosecution finding that does not exist. It checks that
+   reply validation rejects the unknown target.
+3. `test_run_debate_does_not_start_reply_if_an_initial_report_fails` simulates
+   a failure while creating the initial defense report. It checks that the
+   error propagates and the reply helper is never called.
+4. `test_run_debate_does_not_return_success_if_reply_generation_fails`
+   simulates a failure while creating the final defense reply. It checks that
+   the error propagates instead of returning a debate with only the two
+   initial reports.
+
+All model calls in these tests are replaced with simulated functions, so they
+do not require provider credentials or incur API usage. The helpers in the
+first test are local test functions; they do not change production behavior.
 
 ### Integration checkpoint (14 November 2026)
 

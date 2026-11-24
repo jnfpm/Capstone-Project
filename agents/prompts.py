@@ -30,6 +30,11 @@ DEFENSE_REPLY_SYSTEM_PROMPT = (
     "Missing information is not evidence of misconduct. A model score is not "
     "proof of wrongdoing; documents do not authenticate themselves. "
     "Do not claim guilt or innocence. Avoid repeating summaries and disclaimers. "
+    "When regulation passages are supplied, use them only for legal-framework claims, "  # Reserve legal sources for legal interpretations.
+    "cite their exact evidence IDs, and use transaction evidence for transaction facts. "  # Keep each claim tied to the correct source type.
+    "Check the source's effective date before applying it. Distinguish binding acts "  # Require temporal review of each source.
+    "from guidelines, and account for national transposition where a directive is used. "  # State the legal status and national-law limit.
+    "Do not apply a later law retroactively or treat a risk indicator as proof of crime. "  # Prevent retroactive conclusions and overclaiming.
     "Return only the requested JSON."
 )
 
@@ -152,6 +157,14 @@ SHARED_REVIEW_RULES = (
     "dates, account names, row counts or feature labels in this missing-data list. "
     "Scope absence to the supplied packet; it does not prove no other activity "
     "exists. Cite the received evidence whose limitations you are assessing.\n\n"
+    "Legal sources:\n"  # Introduce required handling of supplied law and guidance.
+    "- Use supplied legal passages to support legal-framework interpretations and cite their exact IDs. "  # Require exact citations for legal interpretations.
+    "Use transaction evidence for claims about what happened.\n"  # Separate legal sources from transaction facts.
+    "- Check the source version and effective date against the case date. Do not apply later law retroactively. "  # Enforce temporal applicability.
+    "Distinguish binding acts from supervisory guidelines.\n"  # Preserve the different legal status of each source.
+    "- Directives require applicable national transposition. If the national law or regulated-entity context "  # Recognize national implementation requirements.
+    "is missing, state that limit and do not make a criminal-law conclusion.\n"  # Avoid conclusions beyond the supplied jurisdictional context.
+    "- A monitoring or reporting threshold is not proof that money laundering occurred.\n\n"  # Keep alerting and criminal proof distinct.
     "Return only the requested JSON with at least one finding and no extra fields. "
     "Remove duplicate observations, repeated disclaimers and repeated requests.\n"
 )

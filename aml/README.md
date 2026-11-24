@@ -28,7 +28,7 @@ aml_pipeline/
 │   └── processed/                   everything the pipeline writes (not committed)
 ├── models/                          saved scorers + test scores + metrics (written by 04)
 ├── reports/                         findings table and figures for the written report (written by 03 / 04)
-├── agents/                          NEXT: the investigation agents that use the scorer
+├── agents/                          guide to the model-to-agent investigation flow
 └── app/                             NEXT: the deployed assistant web app
 ```
 
@@ -47,6 +47,9 @@ Put `HI-Small_Trans.csv`, `HI-Small_accounts.csv`, `HI-Small_Patterns.txt` in `d
 2. `03_PREPROCESSING.ipynb` — builds `02_subsample_split.py time` and `group` itself if missing and stops if
    their check fails; ends with `15 / 15` and `67 / 67 checks passed`.
 3. `04_MODELLING.ipynb` — writes `models/` and `reports/model_findings.md`.
+4. Model-to-agent review — from the repository root, run `python aml/run_agent_review.py --list-alerts`,
+   then `python aml/run_agent_review.py --row-id <row_id>` for a listed alert. See `agents/README.md`
+   for provider setup and what evidence is passed to the agents.
 
 **All three notebooks are plain pandas / numpy — no SQL.** Each loads the joined file once into one
 DataFrame (text columns as categories). DuckDB is used only inside the scripts in `src/` (the join and
