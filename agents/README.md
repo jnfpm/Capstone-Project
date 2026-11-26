@@ -9,9 +9,30 @@ uses five application-level model calls: two per initial report and one reply.
 `review_case`, the prepared-data service and the existing experiment runner
 still use independent reviews only. They do not silently start a debate.
 
-See [AGENT_PROJECT_STATUS.pdf](AGENT_PROJECT_STATUS.pdf) for the updated project
-status, Mariana's agent work and remaining tasks. This implementation has not been executed or tested, at Mariana's
-request. Earlier passing tests and report evaluations do not validate it.
+## Optional mediated debate
+
+`orchestrator.run_mediated_debate(context)` runs that same debate and then
+asks the mediator to assess each prosecution finding once. The result keeps
+the debate and mediation separate, so existing callers of `run_debate()` are
+unchanged. This adds one provider call; it does not add another rebuttal round.
+
+The mediator uses only original case evidence to support factual statements.
+It weighs both positions without deciding by majority or forcing agreement.
+Each finding is labelled `supported`, `partially_supported`, `not_supported`
+or `inconclusive`. `not_supported` means the supplied evidence does not
+substantiate the claim; it does not prove the opposite. An `inconclusive`
+finding must name at least one open question. The mediator does not determine
+guilt, innocence or whether an investigation should close.
+
+The JSON schema and citation/target checks are in `contracts.py`; mediator
+instructions and prompt construction are in `prompts.py`; parsing and model
+generation are in `llm.py`; `mediator.py` connects them to the debate result.
+Offline mediator tests use simulated responses and make no provider calls.
+
+See [AGENT_PROJECT_STATUS.pdf](AGENT_PROJECT_STATUS.pdf) for the PDF snapshot
+and [AGENT_PROJECT_STATUS.md](AGENT_PROJECT_STATUS.md) for the refreshed,
+editable Markdown status report. This implementation has not been executed or
+tested. Earlier passing tests and report evaluations do not validate it.
 
 ## Simple reading guide
 
@@ -117,22 +138,38 @@ missing, the review records that history could not be retrieved instead of
 presenting the empty result as proof that no transactions occurred. Callers can
 still pass `related_transactions` to provide their own source rows.
 
-Regulatory passages are searched locally by `agents/regulation_retriever.py`.
-From the repository root, download the official EUR-Lex HTML sources once with
-`python -m agents.regulation_retriever --download`. The downloader contacts
-only the registered official URLs and does not run automatically during an
-alert review. The local text files for the EBA guideline and Directive (EU)
-2018/1673 are searchable without network access. Search results cite the
-document title, section, version, applicability note and official URL. The
-corpus includes Regulation (EU) 2023/1113 as a separate transfers and
-crypto-assets source; it is not the AMLR (Regulation (EU) 2024/1624). A
-coverage note is added to each service case so missing local documents remain
-visible to the agents.
+Regulatory passages are retrieved locally by `agents/regulation_retriever.py`.
+The retriever uses BM25-style term ranking and a small, documented AML topic
+map (customer due diligence, monitoring, reporting, risk assessment, records,
+transfers and criminal law). Alert fields and the model's available explanation
+text form the case-specific search query. This improves wording matches but does not
+interpret legislation. The alert date is passed into retrieval, and every
+passage carries a timing note: the source version post-dates the case, its
+general application starts later, or the date is not supplied. Directives and
+guidelines still require checking national implementation or supervisory
+adoption. These notes are safeguards for review, not a legal applicability
+decision.
+
+The query uses alert fields, available payment/country details from related
+transactions, and the model's explanation text as search terms only. These
+terms are not added as new case facts. The service records searchable and
+missing sources, as well as the topics used for retrieval. A lack of a matching
+passage is reported explicitly. Results
+remain bounded and attributable: title, article/paragraph, version, application
+note, case-date status and official URL travel with each excerpt. For local
+offline use, the corpus is already saved under `agents/legislations/`. To
+refresh the registered EUR-Lex HTML sources explicitly, run
+`python -m agents.regulation_retriever --download`; this command is not run
+automatically during case review.
 
 The corpus also includes the actual AMLR (Regulation (EU) 2024/1624), retrieved
 as official English XHTML from the EU Publications Office CELLAR endpoint and
-cited through EUR-Lex. Its general application date is 10 July 2027, so the
-2022 reference debate includes AMLR passages only as future-framework context.
+cited through EUR-Lex. Its general application date is 10 July 2027, so a
+2022 reference case labels it as a future-framework source. The retriever does
+not currently remove future or post-dated passages; it marks them so the
+reviewers can distinguish context from rules that may have governed the case.
+This is intentional because a future framework can be useful context, but it
+must never be presented as retroactively applicable.
 The old file named `duplicate_regulation_eu_2023_1113_misnamed_2024_1624.pdf`
 remains Regulation (EU) 2023/1113; it is not used as the AMLR source. The
 retriever also includes a 2021 consolidated Directive (EU) 2015/849 for the
@@ -234,6 +271,7 @@ fields, outside the model prompts.
 - `prompts.py`: role, draft and editing instructions.
 - `llm.py`: provider calls, parsing and validation of both stages.
 - `prosecution.py` / `defense.py`: role entry points requiring a true alert.
+- `mediator.py`: evidence-based synthesis after the optional debate.
 - `orchestrator.py`: independent reviews on the same context.
 - `service.py`: prepared-data scoring and handoff to the agents.
 

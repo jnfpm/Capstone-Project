@@ -3,10 +3,18 @@
 from dataclasses import dataclass
 
 from agents.case_context import CaseContext
-from agents.contracts import AgentReport, DefenseReply, validate_report, validate_reply
+from agents.contracts import (
+    AgentReport,
+    DefenseReply,
+    MediatorResolution,
+    validate_mediation,
+    validate_report,
+    validate_reply,
+)
 from agents.defense import create_report as create_defense_report
 from agents.defense import create_reply as create_defense_reply
 from agents.llm import TextGenerator
+from agents.mediator import create_resolution as create_mediator_resolution
 from agents.prosecution import create_report as create_prosecution_report
 
 
@@ -60,3 +68,30 @@ def run_debate(
     # There is no loop, judge or second rebuttal. If any stage fails, its error
     # reaches the caller; an incomplete debate is not returned as a success.
     return SingleRoundDebateResult(initial.prosecution, initial.defense, reply)
+
+
+@dataclass(frozen=True)
+class MediatedDebateResult:
+    """Keep the original debate and evidence-based mediation as separate outputs."""
+
+    debate: SingleRoundDebateResult
+    mediation: MediatorResolution
+
+
+def run_mediated_debate(
+    context: CaseContext, *, text_generator: TextGenerator | None = None
+) -> MediatedDebateResult:
+    """Run the existing debate, then synthesize each prosecution finding once."""
+    debate = run_debate(context, text_generator=text_generator)
+    mediation = create_mediator_resolution(
+        context, debate, text_generator=text_generator
+    )
+    validate_mediation(
+        mediation,
+        debate.prosecution,
+        debate.defense,
+        debate.defense_reply,
+        context.evidence,
+    )
+    # Keep incomplete or invalid mediation visible as an error, never a success-shaped result.
+    return MediatedDebateResult(debate=debate, mediation=mediation)

@@ -191,15 +191,34 @@ def review_alert(
                 "Related transaction history was not retrieved because the source file is missing: "  # Explain the lookup failure.
                 f"{joined_path}."  # Identify the required source path.
             )  # Finish the missing-history note.
-    regulation_query = " ".join(  # Build a short query from general AML concepts and alert context.
-        [  # Keep the terms focused on the evidence available in this case.
-            "anti-money laundering suspicious transactions monitoring risk factors transfers traceability payer payee",  # Search core AML provisions.
-            str(alert.get("country_from", "")),  # Include the sender country when available.
-            str(alert.get("country_to", "")),  # Include the receiver country when available.
-            str(alert.get("Payment Format", "")),  # Include the payment format when available.
-        ]  # Finish the regulation retrieval terms.
-    )  # Create the complete local-search query.
-    regulation_result = retrieve_regulations(regulation_query)  # Search approved local texts without making a live API call.
+    # Search topics connected to the actual alert fields. The retriever expands
+    # these plain-language terms into AML topic aliases and ranks local passages.
+    explanation = model_output.get("reasons", "")
+    if isinstance(explanation, Sequence) and not isinstance(explanation, str):
+        explanation = " ".join(str(reason) for reason in explanation)
+    elif not isinstance(explanation, str):
+        explanation = ""
+    case_terms = [
+        str(alert.get(field, ""))
+        for field in ("Payment Format", "country_from", "country_to")
+    ]
+    for transaction in related_transactions:
+        if isinstance(transaction, Mapping):
+            case_terms.extend(
+                str(transaction.get(field, ""))
+                for field in ("Payment Format", "Payment Currency", "country_from", "country_to")
+            )
+    regulation_query = " ".join(
+        [
+            *case_terms,
+            explanation,
+            "suspicious transaction monitoring payment transfer payer payee risk factors",
+        ]
+    )
+    regulation_result = retrieve_regulations(
+        regulation_query,
+        case_date=timestamp.date(),
+    )
     context: CaseContext = build_case_context(
         alert_id=str(row_id),
         alert=alert,
@@ -218,6 +237,15 @@ def review_alert(
                 "reference": f"regulation search for alert {row_id}",  # Identify the source-search operation.
                 "description": regulation_result.coverage_note,  # State available and missing legal sources.
             },  # Finish the regulation-search coverage record.
+            {
+                "id": f"regulation-search-{row_id}-topics",
+                "source": "case_record",
+                "reference": f"topics used to retrieve regulations for alert {row_id}",
+                "description": (
+                    "Retrieved AML topics: "
+                    + (", ".join(regulation_result.query_topics) or "no specific topic identified")
+                ),
+            },
         ] + [passage.as_evidence() for passage in regulation_result.passages],  # Add the retrieved legal passages.
     )
     debate = review_case(context, text_generator=text_generator)
