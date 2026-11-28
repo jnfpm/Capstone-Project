@@ -6,6 +6,7 @@ from dataclasses import asdict
 
 from agents import config
 from agents.contracts import (
+    MEDIATION_JSON_SCHEMA,
     REPORT_JSON_SCHEMA,
     REPLY_JSON_SCHEMA,
     AgentName,
@@ -14,13 +15,18 @@ from agents.contracts import (
     Finding,
     DefenseReply,
     ReplyFinding,
+    MediatorFinding,
+    MediatorResolution,
     validate_reply,
     validate_report,
+    validate_mediation,
 )
 from agents.prompts import (
+    MEDIATOR_SYSTEM_PROMPT,
     REVISION_SYSTEM_PROMPTS,
     SYSTEM_PROMPTS,
     DEFENSE_REPLY_SYSTEM_PROMPT,
+    build_mediator_prompt,
     build_defense_reply_prompt,
     build_revision_prompt,
     build_user_prompt,
@@ -217,3 +223,60 @@ def generate_defense_reply(
     # This validates structure and references. Human review still checks meaning.
     validate_reply(reply, prosecution, evidence)
     return reply
+
+
+def generate_mediator_resolution(
+    evidence: Sequence[Evidence],
+    prosecution: AgentReport,
+    defense: AgentReport,
+    reply: DefenseReply,
+    *,
+    text_generator: TextGenerator | None = None,
+) -> MediatorResolution:
+    """Assess every prosecution finding against both positions and original evidence."""
+    # Validate all inputs before sending arguments to another model call.
+    validate_report(prosecution, evidence)
+    validate_report(defense, evidence)
+    validate_reply(reply, prosecution, evidence)
+    evidence_json = json.dumps([asdict(item) for item in evidence], ensure_ascii=False)
+    prompt = build_mediator_prompt(prosecution, defense, reply, evidence_json)
+    if text_generator is not None:
+        response = text_generator(MEDIATOR_SYSTEM_PROMPT, prompt)
+    else:
+        response = _generate_text(
+            MEDIATOR_SYSTEM_PROMPT, prompt, json_schema=MEDIATION_JSON_SCHEMA
+        )
+
+    try:
+        payload = json.loads(response)
+    except json.JSONDecodeError as error:
+        raise ValueError("The mediator response was not valid JSON.") from error
+    if not isinstance(payload, dict) or set(payload) != {"agent", "findings"}:
+        raise ValueError("The mediator response must contain agent and findings.")
+    if payload["agent"] != "mediator" or not isinstance(payload["findings"], list):
+        raise ValueError("The mediator response requires agent='mediator' and a findings list.")
+
+    findings = []
+    for number, item in enumerate(payload["findings"], start=1):
+        expected_fields = {
+            "prosecution_finding",
+            "outcome",
+            "assessment",
+            "evidence_ids",
+            "open_questions",
+        }
+        if not isinstance(item, dict) or set(item) != expected_fields:
+            raise ValueError(f"Mediator finding {number} has an invalid shape.")
+        if not isinstance(item["assessment"], str):
+            raise ValueError(f"Mediator finding {number} assessment must be text.")
+        if not isinstance(item["evidence_ids"], list) or not all(
+            isinstance(value, str) for value in item["evidence_ids"]
+        ):
+            raise ValueError(f"Mediator finding {number} evidence_ids must be strings.")
+        if not isinstance(item["open_questions"], list):
+            raise ValueError(f"Mediator finding {number} open_questions must be a list.")
+        findings.append(MediatorFinding(**item))
+
+    resolution = MediatorResolution(agent="mediator", findings=findings)
+    validate_mediation(resolution, prosecution, defense, reply, evidence)
+    return resolution

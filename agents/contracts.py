@@ -7,6 +7,7 @@ from typing import Literal
 # Keep evidence sources consistent across all agent responses.
 EvidenceSource = Literal["transaction", "case_record", "regulation", "model_output"]
 AgentName = Literal["prosecution", "defense"]
+MediatorOutcome = Literal["supported", "partially_supported", "not_supported", "inconclusive"]
 
 # This is the answer format we send to Anthropic. Think of it as a blank form:
 # the model must fill in the agent name, conclusions and evidence IDs.
@@ -89,6 +90,26 @@ class DefenseReply:
     replies: list[ReplyFinding]
 
 
+@dataclass(frozen=True)
+class MediatorFinding:
+    """The mediator's evidence-based assessment of one prosecution finding."""
+
+    # This points to a conclusion, not an evidence item; factual claims cite IDs below.
+    prosecution_finding: int
+    outcome: MediatorOutcome
+    assessment: str
+    evidence_ids: list[str]
+    open_questions: list[str]
+
+
+@dataclass(frozen=True)
+class MediatorResolution:
+    """A bounded synthesis that does not make a guilt or innocence determination."""
+
+    agent: Literal["mediator"]
+    findings: list[MediatorFinding]
+
+
 # The reply needs a different form from an independent report: every point
 # must say which prosecution conclusion it addresses. Evidence stays separate.
 REPLY_JSON_SCHEMA = {
@@ -115,6 +136,53 @@ REPLY_JSON_SCHEMA = {
         },
     },
     "required": ["agent", "replies"],
+    "additionalProperties": False,
+}
+
+
+MEDIATION_JSON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "agent": {"type": "string", "enum": ["mediator"]},
+        "findings": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "prosecution_finding": {"type": "integer", "minimum": 1},
+                    "outcome": {
+                        "type": "string",
+                        "enum": [
+                            "supported",
+                            "partially_supported",
+                            "not_supported",
+                            "inconclusive",
+                        ],
+                    },
+                    "assessment": {"type": "string", "minLength": 1},
+                    "evidence_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1,
+                    },
+                    "open_questions": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                },
+                "required": [
+                    "prosecution_finding",
+                    "outcome",
+                    "assessment",
+                    "evidence_ids",
+                    "open_questions",
+                ],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["agent", "findings"],
     "additionalProperties": False,
 }
 
@@ -146,6 +214,72 @@ def validate_reply(
         AgentReport("defense", [Finding(item.claim, item.evidence_ids) for item in reply.replies]),
         evidence,
     )
+
+
+def validate_mediation(
+    resolution: MediatorResolution,
+    prosecution: AgentReport,
+    defense: AgentReport,
+    reply: DefenseReply,
+    evidence: Sequence[Evidence],
+) -> None:
+    """Validate targets and evidence while leaving the truth of conclusions to review."""
+    if resolution.agent != "mediator":
+        raise ValueError("resolution agent must be 'mediator'.")
+    if defense.agent != "defense":
+        raise ValueError("mediation requires a defense report.")
+
+    # All inputs are checked before the mediator's output is trusted.
+    validate_report(prosecution, evidence)
+    validate_report(defense, evidence)
+    validate_reply(reply, prosecution, evidence)
+
+    expected_targets = set(range(1, len(prosecution.findings) + 1))
+    seen_targets = set()
+    for item in resolution.findings:
+        target = item.prosecution_finding
+        # bool is an int subclass, but cannot identify a valid finding number.
+        if type(target) is not int or target not in expected_targets:
+            raise ValueError("mediation targets an unknown prosecution finding.")
+        if target in seen_targets:
+            raise ValueError("mediation must assess each prosecution finding once.")
+        seen_targets.add(target)
+        if item.outcome not in (
+            "supported",
+            "partially_supported",
+            "not_supported",
+            "inconclusive",
+        ):
+            raise ValueError("unsupported mediation outcome.")
+        if not isinstance(item.assessment, str) or not item.assessment.strip():
+            raise ValueError(f"mediation finding {target} needs an assessment.")
+        if (
+            not isinstance(item.evidence_ids, list)
+            or not item.evidence_ids
+            or not all(isinstance(evidence_id, str) for evidence_id in item.evidence_ids)
+        ):
+            raise ValueError(f"mediation finding {target} must cite original evidence.")
+        if not isinstance(item.open_questions, list) or any(
+            not isinstance(question, str) or not question.strip()
+            for question in item.open_questions
+        ):
+            raise ValueError(f"mediation finding {target} has an invalid open question.")
+        if item.outcome == "inconclusive" and not item.open_questions:
+            raise ValueError(
+                f"inconclusive mediation finding {target} must identify an open question."
+            )
+
+        # Reuse report validation so mediator citations obey the same evidence-ID rules.
+        validate_report(
+            AgentReport(
+                "prosecution",
+                [Finding(claim=item.assessment, evidence_ids=item.evidence_ids)],
+            ),
+            evidence,
+        )
+
+    if seen_targets != expected_targets:
+        raise ValueError("mediation must assess every prosecution finding.")
 
 
 def validate_report(report: AgentReport, evidence: Sequence[Evidence]) -> None:

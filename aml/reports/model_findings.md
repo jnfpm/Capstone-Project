@@ -1,6 +1,6 @@
 # Model findings (written by notebooks/04_MODELLING.ipynb)
 
-Trained 2026-11-12 12:37. Test = rows dated 8-10 Sept, weighted (estimates on the full population).
+Trained 2026-11-23 16:24. Test = rows dated 8-10 Sept, weighted (estimates on the full population).
 
 ## Headline
 
@@ -18,7 +18,7 @@ Trained 2026-11-12 12:37. Test = rows dated 8-10 Sept, weighted (estimates on th
 | lgbm_all at 0.1%/day: alerts per day, precision / recall | 439, 55.52% / 48.96% |
 | lgbm_all at 0.25%/day: precision / recall | 26.31% / 57.94% |
 | non-ACH laundering recall: plain budget / 20% of budget reserved | 0.0% / 3.1% (overall recall 65.2% -> 62.8%) |
-| PR-AUC logreg_all / rule | 0.2670 / 0.0137 (cycle3_48h) |
+| PR-AUC logreg_all / rule | 0.1832 / 0.0137 (cycle3_48h) |
 | lgbm_all at 0.5%/day: alerts per day | 2,189 |
 | lgbm_all at 0.5%/day: precision / recall | 14.83% (13.21%-16.53%) / 65.24% (56.37%-72.81%) |
 | lgbm_no_generator at 0.5%/day: precision / recall | 11.64% / 51.17% |
@@ -36,9 +36,9 @@ Trained 2026-11-12 12:37. Test = rows dated 8-10 Sept, weighted (estimates on th
 | lgbm_graph_all | 205317 | 1493 | 0.0011 | 0.5321 | 467.3677 | 0.9855 | 0.4546-0.5884 |
 | lgbm_no_format | 205317 | 1493 | 0.0011 | 0.4254 | 373.6058 | 0.9722 | 0.3626-0.4750 |
 | lgbm_no_generator | 205317 | 1493 | 0.0011 | 0.3674 | 322.6664 | 0.9721 | 0.3109-0.4162 |
-| lgbm_graph_no_generator | 205317 | 1493 | 0.0011 | 0.3651 | 320.6675 | 0.9732 | 0.3075-0.4145 |
-| logreg_all | 205317 | 1493 | 0.0011 | 0.2670 | 234.5479 | 0.9792 | 0.2134-0.3157 |
-| logreg_no_generator | 205317 | 1493 | 0.0011 | 0.0439 | 38.5472 | 0.9500 |  |
+| lgbm_graph_no_generator | 205317 | 1493 | 0.0011 | 0.3651 | 320.6673 | 0.9732 | 0.3075-0.4145 |
+| logreg_all | 205317 | 1493 | 0.0011 | 0.1832 | 160.9412 | 0.9784 | 0.1427-0.2268 |
+| logreg_no_generator | 205317 | 1493 | 0.0011 | 0.0253 | 22.2499 | 0.9495 |  |
 | rule | 205317 | 1493 | 0.0011 | 0.0137 | 12.0299 | 0.7329 |  |
 
 ## Daily alert budgets (lgbm_all)

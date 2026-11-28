@@ -1,23 +1,71 @@
-# agents/ — the investigation agents (next step)
+# Connect model alerts to the investigation agents
 
-The multi-agent layer that takes an alert from the scorer and investigates it. Team decisions so far:
-Gemini (free tier), built from scratch without an agent framework. The team's current agent code sits in the
-repository's top-level `agents/` folder; it can move here once it reads from this pipeline.
+The model produces a ranked alert. The investigation agents receive the alert
+and a small set of source-backed facts, then write independent prosecution and
+defense reviews. The agents do not receive the dataset's answer key.
 
-## What the agents get from this pipeline
+## Run one review
 
-| Need | Use |
-|---|---|
-| Score transfers and decide alerts | `src/sample_modeling.py`: `load_bundle("models/txn_scorer.joblib")`, then `score_transactions(bundle, X, meta)` → `score`, `alert` (each day's top 0.5% of weighted volume), `reasons` (top three feature contributions, as text) |
-| Feature rows to score | `data/processed/preprocessed/{split}_features.parquet` + matching `{split}_meta.parquet` (same `row_id` order) |
-| Look up an account's transfers | `data/processed/hi_small_joined.parquet` through DuckDB, **explicit columns only** (never `Is Laundering`, `Attempt ID`, `Pattern Type`) and always capped at the alert's timestamp (`WHERE "Timestamp" <= :as_of`) |
-| Know whether an account's history is complete in the subsample | meta `seed_from` / `seed_to` (1 = full history kept) |
+Run these commands from the repository root, using the same Conda environment
+used to train the model:
 
-## Evaluating the agents
+```bash
+conda activate aml-clean
+python -m pip install python-dotenv anthropic google-genai
+python aml/run_agent_review.py --list-alerts
+```
 
-`models/test_scores.parquet` has every test row with its score, alert flag, `Attempt ID`, `Pattern Type` and
-`scheme_truncated` (ground truth — for scoring the agents only, never shown to them):
-- **case reconstruction:** schemes with `scheme_truncated == False` (complete) — did the agent find the
-  scheme's accounts and transfers?
-- **detection only:** truncated schemes (cut on 10 Sept);
-- **false alerts:** alerted rows with `y == 0` — does the agent close them?
+Copy one `row_id` from the list, then run:
+
+```bash
+python aml/run_agent_review.py --row-id 123456
+```
+
+Replace `123456` with a listed row ID. Listing alerts is local and makes no
+language-model calls. Reviewing an alert makes four provider calls: each agent
+creates a report and edits it once. Provider usage may incur cost.
+
+Configure one provider in the repository-root `.env` file. For Google:
+
+```dotenv
+PROVIDER=google
+GOOGLE_API_KEY=your_key
+```
+
+For Anthropic, set `PROVIDER=anthropic` and `ANTHROPIC_API_KEY=your_key`
+instead. Keep `.env` private and out of version control.
+
+## What happens
+
+1. The command loads the saved AML model and finds the selected row in the
+   prepared train, validation, or test data.
+2. It scores the other eligible transactions from that same day too, because
+   alerts are selected using the daily weighted alert budget. It stops if the
+   selected row is not an alert under the saved model.
+3. It retrieves the alert transaction and up to 20 related transfers from the
+   previous 48 hours. The lookup stops before the alert timestamp and reads
+   explicit transaction fields only.
+4. The case includes the model score and top reasons, clearly labeled as model
+   output rather than proof. Local regulatory passages and notes about data
+   coverage are added when available.
+5. Prosecution and defense receive the same evidence independently. Each report
+   cites evidence IDs, which the program checks against the case record.
+
+The terminal prints the score, model reasons, and both reports. Treat these as
+investigation support: a valid evidence citation does not guarantee that a
+claim is correct, and a model score is not proof of laundering.
+
+## Required project files
+
+The run needs the saved scorer, the prepared feature and metadata Parquet files,
+and the joined transaction Parquet file. The AML notebooks create these under
+`aml/models/` and `aml/data/processed/`. Use the environment that created the
+saved scorer so its Python and LightGBM versions match the model artifact.
+
+The integration code lives in:
+
+- `aml/run_agent_review.py` — short command-line entry point and readable output.
+- `agents/service.py` — scoring, source retrieval, case assembly, and handoff.
+- `agents/case_data.py` — bounded source lookup without training labels.
+- `agents/case_context.py` and `agents/orchestrator.py` — evidence IDs and the
+  independent two-sided review flow.

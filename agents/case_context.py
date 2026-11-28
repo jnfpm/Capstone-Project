@@ -36,6 +36,8 @@ TRANSACTION_FIELDS = (
     "acct_to",
     "country_from",
     "country_to",
+    "Bank Name_from",  # Include the sender bank name when the source row contains it.
+    "Bank Name_to",  # Include the receiver bank name when the source row contains it.
 )
 
 
@@ -200,14 +202,16 @@ def build_case_context(
         description = _display(record.get("description"))
         if not evidence_id or not reference or not description:
             raise ValueError("additional evidence requires an ID, reference and description.")
-        if _display(record.get("source")) != "case_record":
-            raise ValueError("additional evidence source must be 'case_record'.")
+        evidence_source = _display(record.get("source"))  # Read the declared source type.
+        if evidence_source not in ("case_record", "regulation"):  # Allow vetted legal passages as evidence.
+            raise ValueError("additional evidence source must be 'case_record' or 'regulation'.")  # Reject unknown source types.
+        validated_source: EvidenceSource = "regulation" if evidence_source == "regulation" else "case_record"  # Keep the value within supported evidence types.
         if evidence_id in seen_evidence_ids:
             raise ValueError(f"duplicate evidence ID: {evidence_id!r}.")
         evidence.append(
             Evidence(
                 id=evidence_id,
-                source="case_record",
+                source=validated_source,
                 reference=reference,
                 description=description,
             )

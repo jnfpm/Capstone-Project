@@ -11,8 +11,8 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from agents.case_context import build_case_context
-from agents.contracts import AgentReport, Finding
-from agents.orchestrator import review_case
+from agents.contracts import AgentReport, DefenseReply, Finding, ReplyFinding
+from agents.orchestrator import review_case, run_debate
 from agents.prosecution import create_report as prosecution_review
 from agents.defense import create_report as defense_review
 
@@ -165,6 +165,119 @@ class ReviewCaseTests(unittest.TestCase):
                     # It is different from a role raising an error during generation.
                     prosecution.assert_called_once()
                     defense.assert_called_once()
+
+    def test_run_debate_keeps_initial_reports_independent_and_replies_after_both(self):
+        # Track the coordinator's order without calling a real model.
+        calls = []
+        reply = DefenseReply(
+            agent="defense",
+            replies=[
+                ReplyFinding(
+                    prosecution_finding=1,
+                    position="qualify",
+                    claim="The finding needs more context.",
+                    evidence_ids=[self.context.evidence[0].id],
+                )
+            ],
+        )
+
+        def create_prosecution(context, *, text_generator=None):
+            # Record prosecution finishing before the defense starts.
+            calls.append("prosecution")
+            self.assertIs(context, self.context)
+            self.assertIsNone(text_generator)
+            return self.prosecution_report
+
+        def create_defense(context, *, text_generator=None):
+            # The initial defense receives only the original case context.
+            calls.append("defense")
+            self.assertIs(context, self.context)
+            self.assertIsNone(text_generator)
+            return self.defense_report
+
+        def create_reply(context, prosecution, defense, *, text_generator=None):
+            # The reply starts only after both independent reports are complete.
+            calls.append("reply")
+            self.assertIs(context, self.context)
+            self.assertIs(prosecution, self.prosecution_report)
+            self.assertIs(defense, self.defense_report)
+            self.assertIsNone(text_generator)
+            return reply
+
+        with (
+            patch("agents.orchestrator.create_prosecution_report", side_effect=create_prosecution),
+            patch("agents.orchestrator.create_defense_report", side_effect=create_defense),
+            patch("agents.orchestrator.create_defense_reply", side_effect=create_reply),
+        ):
+            result = run_debate(self.context)
+
+        self.assertEqual(calls, ["prosecution", "defense", "reply"])
+        self.assertIs(result.prosecution, self.prosecution_report)
+        self.assertIs(result.defense, self.defense_report)
+        self.assertIs(result.defense_reply, reply)
+
+    def test_run_debate_rejects_reply_to_unknown_prosecution_finding(self):
+        # Keep the final reply validator active and return an invalid target.
+        invalid_reply = DefenseReply(
+            agent="defense",
+            replies=[
+                ReplyFinding(
+                    prosecution_finding=2,
+                    position="disagree",
+                    claim="This target does not exist.",
+                    evidence_ids=[self.context.evidence[0].id],
+                )
+            ],
+        )
+        with (
+            patch(
+                "agents.orchestrator.create_prosecution_report",
+                return_value=self.prosecution_report,
+            ),
+            patch(
+                "agents.orchestrator.create_defense_report",
+                return_value=self.defense_report,
+            ),
+            patch("agents.orchestrator.create_defense_reply", return_value=invalid_reply),
+        ):
+            with self.assertRaisesRegex(ValueError, "unknown prosecution finding"):
+                run_debate(self.context)
+
+    def test_run_debate_does_not_start_reply_if_an_initial_report_fails(self):
+        # A failed initial defense report must stop the debate before its reply.
+        failure = RuntimeError("Defense report is unavailable.")
+        with (
+            patch(
+                "agents.orchestrator.create_prosecution_report",
+                return_value=self.prosecution_report,
+            ),
+            patch("agents.orchestrator.create_defense_report", side_effect=failure),
+            patch("agents.orchestrator.create_defense_reply") as create_reply,
+        ):
+            with self.assertRaises(RuntimeError) as caught:
+                run_debate(self.context)
+
+            self.assertIs(caught.exception, failure)
+            create_reply.assert_not_called()
+
+    def test_run_debate_does_not_return_success_if_reply_generation_fails(self):
+        # A failed reply must propagate instead of returning only the two reports.
+        failure = RuntimeError("Defense reply is unavailable.")
+        with (
+            patch(
+                "agents.orchestrator.create_prosecution_report",
+                return_value=self.prosecution_report,
+            ),
+            patch(
+                "agents.orchestrator.create_defense_report",
+                return_value=self.defense_report,
+            ),
+            patch("agents.orchestrator.create_defense_reply", side_effect=failure),
+        ):
+            with self.assertRaises(RuntimeError) as caught:
+                run_debate(self.context)
+
+            self.assertIs(caught.exception, failure)
 
 
 if __name__ == "__main__":
