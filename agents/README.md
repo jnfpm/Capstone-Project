@@ -19,9 +19,10 @@ unchanged. This adds one provider call; it does not add another rebuttal round.
 The mediator uses only original case evidence to support factual statements.
 It weighs both positions without deciding by majority or forcing agreement.
 Each finding is labelled `supported`, `partially_supported`, `not_supported`
-or `inconclusive`. `not_supported` means the supplied evidence does not
-substantiate the claim; it does not prove the opposite. An `inconclusive`
-finding must name at least one open question. The mediator does not determine
+or `inconclusive`. `not_supported` means original evidence contradicts a
+material part of the claim or disproves a required premise; it does not prove
+the opposite. Missing or conflicting evidence is `inconclusive`, and that
+outcome must name at least one open question. The mediator does not determine
 guilt, innocence or whether an investigation should close.
 
 The JSON schema and citation/target checks are in `contracts.py`; mediator
@@ -31,8 +32,8 @@ Offline mediator tests use simulated responses and make no provider calls.
 
 See [AGENT_PROJECT_STATUS.pdf](AGENT_PROJECT_STATUS.pdf) for the PDF snapshot
 and [AGENT_PROJECT_STATUS.md](AGENT_PROJECT_STATUS.md) for the refreshed,
-editable Markdown status report. This implementation has not been executed or
-tested. Earlier passing tests and report evaluations do not validate it.
+editable Markdown status report. Automated mediator tests use simulated
+responses; they do not validate live model quality or production readiness.
 
 ## Simple reading guide
 

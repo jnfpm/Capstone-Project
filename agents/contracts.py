@@ -251,8 +251,14 @@ def validate_mediation(
             "inconclusive",
         ):
             raise ValueError("unsupported mediation outcome.")
-        if not item.assessment.strip():
+        if not isinstance(item.assessment, str) or not item.assessment.strip():
             raise ValueError(f"mediation finding {target} needs an assessment.")
+        if (
+            not isinstance(item.evidence_ids, list)
+            or not item.evidence_ids
+            or not all(isinstance(evidence_id, str) for evidence_id in item.evidence_ids)
+        ):
+            raise ValueError(f"mediation finding {target} must cite original evidence.")
         if not isinstance(item.open_questions, list) or any(
             not isinstance(question, str) or not question.strip()
             for question in item.open_questions

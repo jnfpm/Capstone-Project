@@ -3,6 +3,7 @@
 import json
 import sys
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -85,8 +86,8 @@ class MediatorTests(unittest.TestCase):
     def test_rejects_inconclusive_outcome_without_open_questions(self):
         finding = self.resolution.findings[0]
         resolution = MediatorResolution(
-            "mediator",
-            [MediatorFinding(**{**finding.__dict__, "open_questions": []})],
+            agent="mediator",
+            findings=[replace(finding, open_questions=[])],
         )
 
         with self.assertRaisesRegex(ValueError, "must identify an open question"):
@@ -111,8 +112,8 @@ class MediatorTests(unittest.TestCase):
     def test_rejects_mediator_citations_outside_the_original_evidence(self):
         finding = self.resolution.findings[0]
         invalid = MediatorResolution(
-            "mediator",
-            [MediatorFinding(**{**finding.__dict__, "evidence_ids": ["invented"]})],
+            agent="mediator",
+            findings=[replace(finding, evidence_ids=["invented"])],
         )
 
         with self.assertRaisesRegex(ValueError, "unknown evidence IDs"):
